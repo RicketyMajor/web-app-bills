@@ -30,7 +30,11 @@ export const Light ={
     logorotate:"360deg",
     slideroffset:"0.3em",
     sizeoficon:"1.4em",
-    colorSubtitle:"#2c2c2c"
+    colorSubtitle:"#2c2c2c",
+    border:"rgba(32,32,32,0.08)",
+    textMuted:"#6b6b73",
+    accent:"#9046FF",
+    accentSoft:"rgba(144,70,255,0.10)"
 
 }
 export const Dark = {
@@ -65,5 +69,9 @@ export const Dark = {
     logorotate:"-360deg",
     slideroffset:"0.3em",
     sizeoficon:"1.4em",
-    colorSubtitle:"#b7b7b7"
+    colorSubtitle:"#b7b7b7",
+    border:"rgba(255,255,255,0.08)",
+    textMuted:"#9a9aa2",
+    accent:"#BF94FF",
+    accentSoft:"rgba(191,148,255,0.14)"
   };

@@ -1,23 +1,17 @@
-import { MyRoutes } from './routers/routes'
-import { createContext, useState } from 'react'
-import { Light, Dark } from './styles/themes'
 import { ThemeProvider } from 'styled-components'
-
-// ponytail: not exported; replaced by a Zustand theme store in spec 04
-const ThemeContext = createContext(null)
+import { MyRoutes } from './routers/routes'
+import { Light, Dark } from './styles/themes'
+import { GlobalStyle } from './styles/GlobalStyle'
+import { useThemeStore } from './store/themeStore'
 
 function App() {
-  const [theme, setTheme] = useState('light')
-  const themeStyle = theme === 'light' ? Light : Dark
+  const theme = useThemeStore((s) => s.theme)
 
   return (
-    <>
-      <ThemeContext.Provider value={{ setTheme, theme }}>
-        <ThemeProvider theme={themeStyle}>
-          <MyRoutes />
-        </ThemeProvider>
-      </ThemeContext.Provider>
-    </>
+    <ThemeProvider theme={theme === 'light' ? Light : Dark}>
+      <GlobalStyle />
+      <MyRoutes />
+    </ThemeProvider>
   )
 }
 

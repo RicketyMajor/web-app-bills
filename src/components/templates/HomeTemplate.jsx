@@ -1,26 +1,21 @@
 import styled from "styled-components";
-import { Btnsave } from "../molecules/Btnsave";
-import { v } from "../../styles/variables";
 import { useAuthStore } from "../../store/authStore";
 
-// ponytail: temporary user header + sign out; moves into the Sidebar (spec 02)
 export function HomeTemplate() {
   const user = useAuthStore((s) => s.session?.user);
-  const signOut = useAuthStore((s) => s.signOut);
+  const firstName = (user?.user_metadata?.full_name ?? user?.email)?.split(" ")[0];
 
   return (
     <Container>
-      <h1>Hello, {user?.user_metadata?.full_name ?? user?.email}</h1>
-      <Btnsave
-        titulo="Sign out"
-        icono={<v.iconoCerrarSesion />}
-        bgcolor={v.colorSecundario}
-        funcion={signOut}
-      />
+      <h1>Hello, {firstName}</h1>
     </Container>
   );
 }
 
 const Container = styled.div`
-  height: 100vh;
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
 `;
