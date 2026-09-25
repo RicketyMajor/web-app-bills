@@ -1,3 +1,5 @@
+import { ReportsTemplate } from "../components/templates/ReportsTemplate";
+
 export function Reports() {
-  return <h1>Reports</h1>;
+  return <ReportsTemplate />;
 }
