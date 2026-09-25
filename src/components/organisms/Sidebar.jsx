@@ -14,7 +14,8 @@ import {
 import { v } from "../../styles/variables";
 import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
-import { useMonthBalance } from "../../hooks/useMonthBalance";
+import { useMonthTotals } from "../../hooks/useMonthTotals";
+import { monthStart } from "../../utils/movements";
 import { formatMoney } from "../../utils/formatMoney";
 
 const links = [
@@ -25,6 +26,7 @@ const links = [
 ];
 
 const monthName = new Date().toLocaleDateString("en-US", { month: "long" });
+const currentMonth = monthStart(new Date());
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -32,7 +34,7 @@ export function Sidebar() {
   const signOut = useAuthStore((s) => s.signOut);
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
-  const { data: balance } = useMonthBalance();
+  const balance = useMonthTotals(currentMonth).data?.balance;
 
   const name = user?.user_metadata?.full_name ?? user?.email;
   const avatar = user?.user_metadata?.avatar_url;

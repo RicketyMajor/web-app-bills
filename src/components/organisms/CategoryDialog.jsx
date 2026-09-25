@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { categoryErrorMessage, useSaveCategory } from "../../hooks/useCategories";
+import { Modal, ModalActions } from "../molecules/Modal";
 
 // Curated picker set; free text isn't allowed
 const EMOJIS = [
@@ -17,15 +18,10 @@ const EMOJIS = [
 
 // Modal form to create (no category.id) or edit a category. Mount it to open it.
 export function CategoryDialog({ category, onClose }) {
-  const ref = useRef(null);
   const save = useSaveCategory();
   const isNew = !category.id;
   // Icons outside the set (e.g. old free-text values) fall back to the default
   const [icon, setIcon] = useState(EMOJIS.includes(category.icon) ? category.icon : "📁");
-
-  useEffect(() => {
-    if (!ref.current.open) ref.current.showModal(); // StrictMode runs effects twice
-  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -43,12 +39,8 @@ export function CategoryDialog({ category, onClose }) {
   };
 
   return (
-    <Dialog ref={ref} onClose={onClose} aria-labelledby="category-dialog-title">
+    <Modal title={`${isNew ? "New" : "Edit"} ${category.type} category`} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <h2 id="category-dialog-title">
-          {isNew ? "New" : "Edit"} {category.type} category
-        </h2>
-
         <label>
           <span>Name</span>
           <input
@@ -92,76 +84,18 @@ export function CategoryDialog({ category, onClose }) {
 
         {save.isError && <p role="alert">{categoryErrorMessage(save.error)}</p>}
 
-        <Actions>
+        <ModalActions>
           <button type="button" onClick={onClose}>
             Cancel
           </button>
           <button type="submit" className="primary" disabled={save.isPending}>
             {save.isPending ? "Saving…" : "Save"}
           </button>
-        </Actions>
+        </ModalActions>
       </form>
-    </Dialog>
+    </Modal>
   );
 }
-
-const Dialog = styled.dialog`
-  width: min(400px, calc(100% - 32px));
-  margin: auto; /* the global reset removes the native centering */
-  padding: 24px;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
-  background: ${({ theme }) => theme.bg};
-  color: ${({ theme }) => theme.text};
-
-  &::backdrop {
-    background: rgba(0, 0, 0, 0.4);
-  }
-
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  h2 {
-    font-size: 18px;
-    font-weight: 600;
-    &::first-letter {
-      text-transform: uppercase;
-    }
-  }
-  form > label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  form > label > span,
-  summary > span {
-    color: ${({ theme }) => theme.textMuted};
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-  }
-  form > label > input {
-    height: 40px;
-    padding: 0 12px;
-    border: 1px solid ${({ theme }) => theme.border};
-    border-radius: 8px;
-    background: ${({ theme }) => theme.bgtotal};
-    color: inherit;
-    font: inherit;
-    font-size: 14px;
-  }
-  input[type="color"] {
-    padding: 4px;
-    cursor: pointer;
-  }
-  p[role="alert"] {
-    color: ${v.colorError};
-    font-size: 14px;
-  }
-`;
 
 // <details> accordion with a radio grid: keyboard arrows move the selection natively
 const Picker = styled.details`
@@ -241,39 +175,3 @@ const Picker = styled.details`
   }
 `;
 
-const Actions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-
-  button {
-    height: 40px;
-    padding: 0 16px;
-    border: none;
-    border-radius: 8px;
-    background: none;
-    color: ${({ theme }) => theme.textMuted};
-    font: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 150ms, color 150ms;
-
-    &:hover {
-      background: ${({ theme }) => theme.border};
-      color: ${({ theme }) => theme.text};
-    }
-    &:active {
-      transform: scale(0.97);
-    }
-    &:disabled {
-      opacity: 0.6;
-      cursor: default;
-    }
-  }
-  .primary,
-  .primary:hover {
-    background: ${({ theme }) => theme.accent};
-    color: ${({ theme }) => theme.body};
-  }
-`;
