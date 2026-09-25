@@ -1,10 +1,5 @@
-import styled from "styled-components";
+import { HomeTemplate } from "../components/templates/HomeTemplate";
+
 export function Home() {
-  return (<Container>
-<h1>Home</h1>
-  </Container>);
+  return <HomeTemplate />;
 }
-const Container =styled.div`
-    height: 100vh;
-  
-`
