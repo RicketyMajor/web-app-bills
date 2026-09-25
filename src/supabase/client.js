@@ -7,4 +7,5 @@ if (!url || !anonKey) {
   throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY in .env.local");
 }
 
-export const supabase = createClient(url, anonKey);
+// Keep only the origin: a pasted ".../rest/v1/" URL breaks auth endpoints
+export const supabase = createClient(new URL(url).origin, anonKey);
