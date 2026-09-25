@@ -1,3 +1,5 @@
+import { CategoriesTemplate } from "../components/templates/CategoriesTemplate";
+
 export function Categories() {
-  return <h1>Categories</h1>;
+  return <CategoriesTemplate />;
 }
