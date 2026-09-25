@@ -1,3 +1,5 @@
+import { MovementsTemplate } from "../components/templates/MovementsTemplate";
+
 export function Movements() {
-  return <h1>Movements</h1>;
+  return <MovementsTemplate />;
 }

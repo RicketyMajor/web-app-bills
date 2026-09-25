@@ -26,6 +26,13 @@ export function useCategories(type) {
   });
 }
 
+// Movement rows show the category's name, icon and color
+const invalidate = (queryClient) =>
+  Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["categories"] }),
+    queryClient.invalidateQueries({ queryKey: ["movements"] }),
+  ]);
+
 // Inserts when there's no id, updates otherwise.
 export function useSaveCategory() {
   const queryClient = useQueryClient();
@@ -35,7 +42,7 @@ export function useSaveCategory() {
       const { error } = await (id ? table.update(fields).eq("id", id) : table.insert(fields));
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+    onSuccess: () => invalidate(queryClient),
   });
 }
 
@@ -47,6 +54,6 @@ export function useDeleteCategory() {
       const { error } = await supabase.from("categories").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["categories"] }),
+    onSuccess: () => invalidate(queryClient),
   });
 }
