@@ -36,7 +36,13 @@ export function MovementsTemplate() {
         <MonthSelector />
         <PrimaryButton type="button" onClick={() => setEditing({ type, date: newDate })}>
           <v.agregar aria-hidden="true" />
-          New {type}
+          <StableLabel>
+            {["expense", "income"].map((t) => (
+              <span key={t} className={t === type ? undefined : "off"}>
+                New {t}
+              </span>
+            ))}
+          </StableLabel>
         </PrimaryButton>
       </Header>
 
@@ -133,6 +139,20 @@ const Header = styled.header`
     font-size: 28px;
     font-weight: 600;
     letter-spacing: -0.02em;
+  }
+`;
+
+// Both labels share one grid cell, so the button keeps the wider width
+// and the month selector doesn't shift when the tab changes.
+const StableLabel = styled.span`
+  display: grid;
+  justify-items: center;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+  .off {
+    visibility: hidden;
   }
 `;
 
