@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { useAuthStore } from "../../store/authStore";
@@ -41,6 +42,10 @@ export function LoginTemplate() {
         {error && <ErrorText role="alert">{error}</ErrorText>}
 
         <small>Free · Your data is only visible to you</small>
+        <small>
+          By continuing you agree to the <Link to="/terms">Terms</Link> and{" "}
+          <Link to="/privacy">Privacy Policy</Link>.
+        </small>
       </SignIn>
     </Container>
   );
@@ -101,6 +106,9 @@ const SignIn = styled.section`
     color: ${({ theme }) => theme.textMuted};
     font-size: 12px;
     text-align: center;
+  }
+  small a {
+    color: inherit;
   }
 `;
 

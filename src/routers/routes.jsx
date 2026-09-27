@@ -9,6 +9,8 @@ const Home = lazy(() => import('../pages/Home').then((m) => ({ default: m.Home }
 const Categories = lazy(() => import('../pages/Categories').then((m) => ({ default: m.Categories })));
 const Movements = lazy(() => import('../pages/Movements').then((m) => ({ default: m.Movements })));
 const Reports = lazy(() => import('../pages/Reports').then((m) => ({ default: m.Reports })));
+const Privacy = lazy(() => import('../pages/Privacy').then((m) => ({ default: m.Privacy })));
+const Terms = lazy(() => import('../pages/Terms').then((m) => ({ default: m.Terms })));
 
 export function MyRoutes() {
     return (
@@ -26,6 +28,9 @@ export function MyRoutes() {
                             <Route path="/reports" element={<Reports />} />
                         </Route>
                     </Route>
+                    {/* Public for everyone (Google OAuth consent screen links here) */}
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Suspense>
