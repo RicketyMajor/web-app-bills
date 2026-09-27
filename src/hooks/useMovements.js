@@ -21,6 +21,23 @@ export function useMovements(month, type) {
   });
 }
 
+// Latest movements of both types, any month (Home)
+export function useRecentMovements(limit = 5) {
+  return useQuery({
+    queryKey: ["movements", "recent", limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("movements")
+        .select("id, amount, description, date, paid, categories!inner(name, icon, color, type)")
+        .order("date", { ascending: false })
+        .order("id", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 // Lists and every month's totals depend on movements
 const invalidate = (queryClient) =>
   Promise.all([

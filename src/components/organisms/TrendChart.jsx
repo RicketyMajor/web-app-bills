@@ -7,7 +7,7 @@ const shortMonth = (m) => monthLabel(m).slice(0, 3);
 
 // Income up, expenses down from a shared zero baseline (one axis).
 // Position tells the two apart; green/red alone fails colour-blind separation.
-export function TrendChart({ data, current }) {
+export function TrendChart({ data, current, half = 96 }) {
   const max = Math.max(1, ...data.flatMap((d) => [d.income, d.expense]));
   const pct = (value) => `${(value / max) * 100}%`;
 
@@ -22,7 +22,7 @@ export function TrendChart({ data, current }) {
         </span>
       </Legend>
 
-      <Columns>
+      <Columns $half={half}>
         {data.map((d) => (
           <li
             key={d.month}
@@ -139,7 +139,7 @@ const Columns = styled.ul`
   li {
     position: relative;
     display: grid;
-    grid-template-rows: 96px 96px auto;
+    grid-template-rows: ${({ $half }) => `${$half}px ${$half}px auto`};
     justify-items: center;
     border-radius: 8px;
     outline-offset: -2px;

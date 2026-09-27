@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
+import { PrimaryButton } from "../atoms/PrimaryButton";
 import { CategoryDialog } from "../organisms/CategoryDialog";
 import { TypeTabs } from "../molecules/TypeTabs";
 import { CategorySwatch } from "../atoms/CategorySwatch";
@@ -24,10 +25,10 @@ export function CategoriesTemplate() {
     <Container>
       <Header>
         <h1>Categories</h1>
-        <Primary type="button" onClick={() => setEditing({ type })}>
+        <PrimaryButton type="button" onClick={() => setEditing({ type })}>
           <v.agregar aria-hidden="true" />
           New category
-        </Primary>
+        </PrimaryButton>
       </Header>
 
       <TypeTabs
@@ -91,26 +92,6 @@ const Header = styled.header`
     font-size: 28px;
     font-weight: 600;
     letter-spacing: -0.02em;
-  }
-`;
-
-const Primary = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 8px;
-  background: ${({ theme }) => theme.accent};
-  color: ${({ theme }) => theme.body};
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-
-  &:active {
-    transform: scale(0.97);
   }
 `;
 

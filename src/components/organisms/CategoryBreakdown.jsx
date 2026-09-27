@@ -4,13 +4,13 @@ import { CategorySwatch } from "../atoms/CategorySwatch";
 
 // Ranked list; bar width is relative to the top category, % is share of the month.
 // Every value is printed, so the list is its own table view.
-export function CategoryBreakdown({ rows }) {
+export function CategoryBreakdown({ rows, limit }) {
   const sum = rows.reduce((s, r) => s + r.total, 0);
   const top = rows[0]?.total || 1;
 
   return (
     <List>
-      {rows.map((r) => (
+      {rows.slice(0, limit).map((r) => (
         <li key={r.id}>
           <CategorySwatch $color={r.color}>{r.icon}</CategorySwatch>
           <div className="body">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
+import { PrimaryButton } from "../atoms/PrimaryButton";
 import { formatMoney } from "../../utils/formatMoney";
 import { isoDate, monthStart, shortDate } from "../../utils/movements";
 import { useMonthStore } from "../../store/monthStore";
@@ -32,10 +33,10 @@ export function MovementsTemplate() {
       <Header>
         <h1>Movements</h1>
         <MonthSelector />
-        <Primary type="button" onClick={() => setEditing({ type, date: newDate })}>
+        <PrimaryButton type="button" onClick={() => setEditing({ type, date: newDate })}>
           <v.agregar aria-hidden="true" />
           New {type}
-        </Primary>
+        </PrimaryButton>
       </Header>
 
       <Stats>
@@ -131,26 +132,6 @@ const Header = styled.header`
     font-size: 28px;
     font-weight: 600;
     letter-spacing: -0.02em;
-  }
-`;
-
-const Primary = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 8px;
-  background: ${({ theme }) => theme.accent};
-  color: ${({ theme }) => theme.body};
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-
-  &:active {
-    transform: scale(0.97);
   }
 `;
 
