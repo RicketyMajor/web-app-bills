@@ -1,29 +1,34 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
-import { Login } from '../pages/Login';
-import { Home } from '../pages/Home';
-import { Categories } from '../pages/Categories';
-import { Movements } from '../pages/Movements';
-import { Reports } from '../pages/Reports';
 import { AppLayout } from '../components/templates/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoute';
+
+// Route-level code splitting: each page ships in its own chunk.
+const Login = lazy(() => import('../pages/Login').then((m) => ({ default: m.Login })));
+const Home = lazy(() => import('../pages/Home').then((m) => ({ default: m.Home })));
+const Categories = lazy(() => import('../pages/Categories').then((m) => ({ default: m.Categories })));
+const Movements = lazy(() => import('../pages/Movements').then((m) => ({ default: m.Movements })));
+const Reports = lazy(() => import('../pages/Reports').then((m) => ({ default: m.Reports })));
 
 export function MyRoutes() {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route element={<PublicOnlyRoute />}>
-                    <Route path="/login" element={<Login />} />
-                </Route>
-                <Route element={<ProtectedRoute />}>
-                    <Route element={<AppLayout />}>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/categories" element={<Categories />} />
-                        <Route path="/movements" element={<Movements />} />
-                        <Route path="/reports" element={<Reports />} />
+            <Suspense fallback={null}>
+                <Routes>
+                    <Route element={<PublicOnlyRoute />}>
+                        <Route path="/login" element={<Login />} />
                     </Route>
-                </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                    <Route element={<ProtectedRoute />}>
+                        <Route element={<AppLayout />}>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/categories" element={<Categories />} />
+                            <Route path="/movements" element={<Movements />} />
+                            <Route path="/reports" element={<Reports />} />
+                        </Route>
+                    </Route>
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
         </BrowserRouter>
     );
 }

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
 import { Sidebar } from "../organisms/Sidebar";
@@ -8,7 +9,10 @@ export function AppLayout() {
     <Container>
       <Sidebar />
       <Main>
-        <Outlet />
+        {/* Pages are lazy-loaded; suspend here so the sidebar stays put */}
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </Main>
     </Container>
   );

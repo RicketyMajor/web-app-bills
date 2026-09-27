@@ -6,6 +6,9 @@ import App from './App.jsx'
 
 const queryClient = new QueryClient()
 
+// A redeploy removes old lazy chunks; reload to fetch the new index instead of a blank page
+window.addEventListener('vite:preloadError', () => window.location.reload())
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
