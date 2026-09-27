@@ -1,10 +1,11 @@
 import styled from "styled-components";
-import { formatMoney } from "../../utils/formatMoney";
+import { useMoney } from "../../hooks/useProfile";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 
 // Ranked list; bar width is relative to the top category, % is share of the month.
 // Every value is printed, so the list is its own table view.
 export function CategoryBreakdown({ rows, limit }) {
+  const money = useMoney();
   const sum = rows.reduce((s, r) => s + r.total, 0);
   const top = rows[0]?.total || 1;
 
@@ -17,7 +18,7 @@ export function CategoryBreakdown({ rows, limit }) {
             <div className="line">
               <span className="name">{r.name}</span>
               <span className="value">
-                {formatMoney(r.total).replace("+", "")}
+                {money(r.total).replace("+", "")}
                 <small>{Math.round((r.total / sum) * 100)}%</small>
               </span>
             </div>

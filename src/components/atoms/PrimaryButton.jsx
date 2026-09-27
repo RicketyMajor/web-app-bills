@@ -20,4 +20,8 @@ export const PrimaryButton = styled.button`
   &:active {
     transform: scale(0.97);
   }
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 `;

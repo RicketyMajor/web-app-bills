@@ -41,8 +41,8 @@ export function Privacy() {
       <h2>Retention and deletion</h2>
       <p>
         Your data is kept while your account exists. You can delete categories and movements at any
-        time from the app. To delete your account and all its data, open a request at{" "}
-        <a href={CONTACT_URL}>{CONTACT_URL}</a> and it will be removed.
+        time from the app, and delete your account and all its data from Settings → Delete account.
+        If you can't access the app, open a request at <a href={CONTACT_URL}>{CONTACT_URL}</a>.
       </p>
 
       <h2>Google API Services</h2>

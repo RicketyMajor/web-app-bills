@@ -3,19 +3,16 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { useAuthStore } from "../../store/authStore";
-import { formatMoney } from "../../utils/formatMoney";
 import { isoDate, monthLabel, monthStart, shortDate } from "../../utils/movements";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useMonthlyTrend } from "../../hooks/useReports";
+import { useMoney, useProfile } from "../../hooks/useProfile";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { TrendChart } from "../organisms/TrendChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
 import { MovementDialog } from "../organisms/MovementDialog";
-
-// formatMoney always signs; totals read better bare
-const unsigned = (n) => formatMoney(Math.abs(n)).replace("+", "");
 
 function greeting(hour) {
   if (hour < 12) return "Good morning";
@@ -25,8 +22,11 @@ function greeting(hour) {
 
 // Home is always "how am I doing now": the current month, independent of the month selector
 export function HomeTemplate() {
+  const money = useMoney();
   const user = useAuthStore((s) => s.session?.user);
-  const firstName = (user?.user_metadata?.full_name ?? user?.email)?.split(" ")[0];
+  const profile = useProfile().data;
+  // Name edited in Settings wins; Google metadata is the fallback
+  const firstName = (profile?.full_name || user?.user_metadata?.full_name || user?.email)?.split(" ")[0];
   const now = new Date();
   const month = monthStart(now);
   const monthName = monthLabel(month).split(" ")[0];
@@ -110,7 +110,7 @@ export function HomeTemplate() {
                           </span>
                         </div>
                         <Amount $color={income ? v.colorIngresos : v.colorGastos}>
-                          {formatMoney(income ? m.amount : -m.amount)}
+                          {money(income ? m.amount : -m.amount)}
                         </Amount>
                       </li>
                     );
@@ -148,6 +148,9 @@ export function HomeTemplate() {
 
 // Signature: what's left of this month's income, and how much of it is already spent
 function Balance({ totals, monthName }) {
+  const money = useMoney();
+  // money() always signs; totals read better bare
+  const unsigned = (n) => money(Math.abs(n)).replace("+", "");
   const { income, expense, balance } = totals;
   const ratio = income > 0 ? expense / income : null;
   const over = balance < 0;

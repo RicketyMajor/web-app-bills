@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { v } from "../../styles/variables";
-import { formatMoney } from "../../utils/formatMoney";
+import { useMoney } from "../../hooks/useProfile";
 import { monthLabel } from "../../utils/movements";
 
 const shortMonth = (m) => monthLabel(m).slice(0, 3);
@@ -8,6 +8,7 @@ const shortMonth = (m) => monthLabel(m).slice(0, 3);
 // Income up, expenses down from a shared zero baseline (one axis).
 // Position tells the two apart; green/red alone fails colour-blind separation.
 export function TrendChart({ data, current, half = 96 }) {
+  const money = useMoney();
   const max = Math.max(1, ...data.flatMap((d) => [d.income, d.expense]));
   const pct = (value) => `${(value / max) * 100}%`;
 
@@ -28,7 +29,7 @@ export function TrendChart({ data, current, half = 96 }) {
             key={d.month}
             tabIndex={0}
             className={d.month === current ? "current" : undefined}
-            aria-label={`${monthLabel(d.month)}: income ${formatMoney(d.income)}, expenses ${formatMoney(-d.expense)}, net ${formatMoney(d.income - d.expense)}`}
+            aria-label={`${monthLabel(d.month)}: income ${money(d.income)}, expenses ${money(-d.expense)}, net ${money(d.income - d.expense)}`}
           >
             <div className="half up">
               <Bar $color={v.colorIngresos} style={{ height: pct(d.income) }} />
@@ -41,9 +42,9 @@ export function TrendChart({ data, current, half = 96 }) {
             </span>
             <Tip className="tip" aria-hidden="true">
               <strong>{monthLabel(d.month)}</strong>
-              <span>Income {formatMoney(d.income)}</span>
-              <span>Expenses {formatMoney(-d.expense)}</span>
-              <span>Net {formatMoney(d.income - d.expense)}</span>
+              <span>Income {money(d.income)}</span>
+              <span>Expenses {money(-d.expense)}</span>
+              <span>Net {money(d.income - d.expense)}</span>
             </Tip>
           </li>
         ))}
@@ -64,9 +65,9 @@ export function TrendChart({ data, current, half = 96 }) {
             {data.map((d) => (
               <tr key={d.month}>
                 <th scope="row">{monthLabel(d.month)}</th>
-                <td>{formatMoney(d.income)}</td>
-                <td>{formatMoney(-d.expense)}</td>
-                <td>{formatMoney(d.income - d.expense)}</td>
+                <td>{money(d.income)}</td>
+                <td>{money(-d.expense)}</td>
+                <td>{money(d.income - d.expense)}</td>
               </tr>
             ))}
           </tbody>

@@ -136,4 +136,10 @@ const Actions = styled.div`
     background: ${({ theme }) => theme.accent};
     color: ${({ theme }) => theme.body};
   }
+  /* Dark text: white on the expense red is ~3:1, fails AA at 14px */
+  .danger:not(:disabled),
+  .danger:not(:disabled):hover {
+    background: ${v.colorGastos};
+    color: #1c1c1e;
+  }
 `;

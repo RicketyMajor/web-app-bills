@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
 import styled, { css } from "styled-components";
 import {
@@ -6,6 +6,7 @@ import {
   RiPriceTag3Line,
   RiExchangeDollarLine,
   RiPieChart2Line,
+  RiSettings3Line,
   RiSunLine,
   RiMoonLine,
   RiLogoutBoxRLine,
@@ -16,13 +17,14 @@ import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { monthStart } from "../../utils/movements";
-import { formatMoney } from "../../utils/formatMoney";
+import { useMoney, useProfile, useUpdateProfile } from "../../hooks/useProfile";
 
 const links = [
   { to: "/", label: "Home", icon: RiHome5Line },
   { to: "/categories", label: "Categories", icon: RiPriceTag3Line },
   { to: "/movements", label: "Movements", icon: RiExchangeDollarLine },
   { to: "/reports", label: "Reports", icon: RiPieChart2Line },
+  { to: "/settings", label: "Settings", icon: RiSettings3Line },
 ];
 
 const monthName = new Date().toLocaleDateString("en-US", { month: "long" });
@@ -35,8 +37,23 @@ export function Sidebar() {
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const balance = useMonthTotals(currentMonth).data?.balance;
+  const money = useMoney();
+  const profile = useProfile().data;
+  const updateProfile = useUpdateProfile();
 
-  const name = user?.user_metadata?.full_name ?? user?.email;
+  // Another device chose a theme: adopt it. null = never chosen, keep the local one.
+  useEffect(() => {
+    if (profile?.theme) useThemeStore.setState({ theme: profile.theme });
+  }, [profile?.theme]);
+
+  // localStorage flips instantly (no flash); the profile follows in the background
+  const handleToggleTheme = () => {
+    toggleTheme();
+    updateProfile.mutate({ theme: useThemeStore.getState().theme });
+  };
+
+  // Name edited in Settings wins; Google metadata is the fallback
+  const name = profile?.full_name || user?.user_metadata?.full_name || user?.email;
   const avatar = user?.user_metadata?.avatar_url;
 
   return (
@@ -48,7 +65,7 @@ export function Sidebar() {
 
       <Balance $collapsed={collapsed} $sign={Math.sign(balance ?? 0)}>
         <span>{monthName} balance</span>
-        <strong>{balance === undefined ? "—" : formatMoney(balance)}</strong>
+        <strong>{balance === undefined ? "—" : money(balance)}</strong>
       </Balance>
 
       <Nav>
@@ -61,7 +78,7 @@ export function Sidebar() {
       </Nav>
 
       <Footer>
-        <Action type="button" onClick={toggleTheme} title="Toggle theme">
+        <Action type="button" onClick={handleToggleTheme} title="Toggle theme">
           {theme === "light" ? <RiMoonLine aria-hidden="true" /> : <RiSunLine aria-hidden="true" />}
           <span className="label">{theme === "light" ? "Dark mode" : "Light mode"}</span>
         </Action>

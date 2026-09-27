@@ -2,17 +2,18 @@ import { useState } from "react";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { PrimaryButton } from "../atoms/PrimaryButton";
-import { formatMoney } from "../../utils/formatMoney";
 import { isoDate, monthStart, shortDate } from "../../utils/movements";
 import { useMonthStore } from "../../store/monthStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useDeleteMovement, useMovements } from "../../hooks/useMovements";
+import { useMoney } from "../../hooks/useProfile";
 import { MonthSelector } from "../molecules/MonthSelector";
 import { TypeTabs } from "../molecules/TypeTabs";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { MovementDialog } from "../organisms/MovementDialog";
 
 export function MovementsTemplate() {
+  const money = useMoney();
   const month = useMonthStore((s) => s.month);
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
@@ -25,7 +26,7 @@ export function MovementsTemplate() {
   const sign = type === "income" ? 1 : -1;
 
   const handleDelete = (m) => {
-    if (confirm(`Delete this ${formatMoney(sign * m.amount)} movement?`)) remove.mutate(m.id);
+    if (confirm(`Delete this ${money(sign * m.amount)} movement?`)) remove.mutate(m.id);
   };
 
   return (
@@ -42,15 +43,15 @@ export function MovementsTemplate() {
       <Stats>
         <Stat $color={v.colorIngresos}>
           <span>Income</span>
-          <strong>{totals ? formatMoney(totals.income) : "—"}</strong>
+          <strong>{totals ? money(totals.income) : "—"}</strong>
         </Stat>
         <Stat $color={v.colorGastos}>
           <span>Expenses</span>
-          <strong>{totals ? formatMoney(-totals.expense) : "—"}</strong>
+          <strong>{totals ? money(-totals.expense) : "—"}</strong>
         </Stat>
         <Stat $sign={Math.sign(totals?.balance ?? 0)}>
           <span>Balance</span>
-          <strong>{totals ? formatMoney(totals.balance) : "—"}</strong>
+          <strong>{totals ? money(totals.balance) : "—"}</strong>
         </Stat>
       </Stats>
 
@@ -85,7 +86,7 @@ export function MovementsTemplate() {
                   </span>
                 </div>
                 <Amount $color={type === "income" ? v.colorIngresos : v.colorGastos}>
-                  {formatMoney(sign * m.amount)}
+                  {money(sign * m.amount)}
                 </Amount>
                 <IconButton
                   type="button"
