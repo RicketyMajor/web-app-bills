@@ -166,9 +166,8 @@ const Card = styled.section`
 `;
 
 // Outlined, not filled: PrimaryButton stays the one accent action on the page.
-// Red mixed toward the text color: plain #FE6156 on the light canvas is ~2.7:1.
 const DangerButton = styled.button`
-  --danger: color-mix(in srgb, ${v.colorGastos} 60%, ${({ theme }) => theme.text});
+  --danger: ${({ theme }) => theme.expenseText};
   height: 40px;
   padding: 0 16px;
   border: 1px solid var(--danger);

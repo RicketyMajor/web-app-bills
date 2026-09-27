@@ -109,7 +109,7 @@ export function HomeTemplate() {
                             {m.categories.name} · {shortDate(m.date)}
                           </span>
                         </div>
-                        <Amount $color={income ? v.colorIngresos : v.colorGastos}>
+                        <Amount $sign={income ? 1 : -1}>
                           {money(income ? m.amount : -m.amount)}
                         </Amount>
                       </li>
@@ -242,7 +242,7 @@ const Hero = styled.section`
     letter-spacing: -0.03em;
   }
   .figure.over {
-    color: ${v.colorGastos};
+    color: ${({ theme }) => theme.expenseText};
   }
   /* On the tinted surface, secondary text is the foreground at 72% (muted gray drops below 4.5:1) */
   .caption {
@@ -281,7 +281,7 @@ const Meter = styled.div`
   div {
     height: 100%;
     border-radius: 4px;
-    background: ${({ $over, theme }) => ($over ? v.colorGastos : theme.accent)};
+    background: ${({ $over, theme }) => ($over ? theme.expenseText : theme.accent)};
   }
 `;
 
@@ -385,7 +385,7 @@ const Recent = styled.ul`
 `;
 
 const Amount = styled.span`
-  color: ${({ $color }) => $color};
+  color: ${({ $sign, theme }) => ($sign > 0 ? theme.incomeText : theme.expenseText)};
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;

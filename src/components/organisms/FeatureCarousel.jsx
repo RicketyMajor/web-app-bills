@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { RiPauseLine, RiPlayLine } from "react-icons/ri";
-import { v } from "../../styles/variables";
 import { formatMoney } from "../../utils/formatMoney";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { CategoryBreakdown } from "./CategoryBreakdown";
@@ -35,7 +34,7 @@ const slides = [
               <strong>{m.title}</strong>
               <span>{m.meta}</span>
             </div>
-            <b style={{ color: m.amount > 0 ? v.colorIngresos : v.colorGastos }}>
+            <b className={m.amount > 0 ? "in" : undefined}>
               {formatMoney(m.amount)}
             </b>
           </li>
@@ -205,9 +204,13 @@ const Rows = styled.ul`
     font-size: 12px;
   }
   b {
+    color: ${({ theme }) => theme.expenseText};
     font-size: 14px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+  }
+  b.in {
+    color: ${({ theme }) => theme.incomeText};
   }
 `;
 
@@ -225,7 +228,7 @@ const Balance = styled.div`
     text-transform: uppercase;
   }
   strong {
-    color: ${v.colorIngresos};
+    color: ${({ theme }) => theme.incomeText};
     font-size: 40px;
     font-weight: 600;
     letter-spacing: -0.02em;

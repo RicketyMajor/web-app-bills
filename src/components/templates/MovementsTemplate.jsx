@@ -41,11 +41,11 @@ export function MovementsTemplate() {
       </Header>
 
       <Stats>
-        <Stat $color={v.colorIngresos}>
+        <Stat $sign={1}>
           <span>Income</span>
           <strong>{totals ? money(totals.income) : "—"}</strong>
         </Stat>
-        <Stat $color={v.colorGastos}>
+        <Stat $sign={-1}>
           <span>Expenses</span>
           <strong>{totals ? money(-totals.expense) : "—"}</strong>
         </Stat>
@@ -85,7 +85,7 @@ export function MovementsTemplate() {
                     {!m.paid && <Badge>Pending</Badge>}
                   </span>
                 </div>
-                <Amount $color={type === "income" ? v.colorIngresos : v.colorGastos}>
+                <Amount $sign={type === "income" ? 1 : -1}>
                   {money(sign * m.amount)}
                 </Amount>
                 <IconButton
@@ -170,8 +170,8 @@ const Stat = styled.div`
   strong {
     font-size: 22px;
     font-weight: 600;
-    color: ${({ $color, $sign, theme }) =>
-      $color ?? ($sign > 0 ? v.colorIngresos : $sign < 0 ? v.colorGastos : theme.text)};
+    color: ${({ $sign, theme }) =>
+      $sign > 0 ? theme.incomeText : $sign < 0 ? theme.expenseText : theme.text};
   }
 `;
 
@@ -223,7 +223,7 @@ const Badge = styled.span`
 `;
 
 const Amount = styled.span`
-  color: ${({ $color }) => $color};
+  color: ${({ $sign, theme }) => ($sign > 0 ? theme.incomeText : theme.expenseText)};
   font-size: 14px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -249,7 +249,7 @@ const IconButton = styled.button`
     color: ${({ theme }) => theme.text};
   }
   &.danger:hover {
-    color: ${v.colorGastos};
+    color: ${({ theme }) => theme.expenseText};
   }
   &:disabled {
     opacity: 0.5;

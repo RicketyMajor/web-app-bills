@@ -230,7 +230,7 @@ const Balance = styled.div`
     letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
     color: ${({ $sign, theme }) =>
-      $sign > 0 ? v.colorIngresos : $sign < 0 ? v.colorGastos : theme.text};
+      $sign > 0 ? theme.incomeText : $sign < 0 ? theme.expenseText : theme.text};
   }
   @media (max-width: ${v.bpbart}) {
     display: none;

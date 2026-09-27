@@ -136,7 +136,7 @@ const IconButton = styled.button`
     color: ${({ theme }) => theme.text};
   }
   &.danger:hover {
-    color: ${v.colorGastos};
+    color: ${({ theme }) => theme.expenseText};
   }
   &:disabled {
     opacity: 0.5;

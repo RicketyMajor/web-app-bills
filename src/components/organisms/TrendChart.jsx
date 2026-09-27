@@ -1,5 +1,4 @@
-import styled from "styled-components";
-import { v } from "../../styles/variables";
+import styled, { useTheme } from "styled-components";
 import { useMoney } from "../../hooks/useProfile";
 import { monthLabel } from "../../utils/movements";
 
@@ -9,6 +8,7 @@ const shortMonth = (m) => monthLabel(m).slice(0, 3);
 // Position tells the two apart; green/red alone fails colour-blind separation.
 export function TrendChart({ data, current, half = 96 }) {
   const money = useMoney();
+  const theme = useTheme();
   const max = Math.max(1, ...data.flatMap((d) => [d.income, d.expense]));
   const pct = (value) => `${(value / max) * 100}%`;
 
@@ -16,10 +16,10 @@ export function TrendChart({ data, current, half = 96 }) {
     <Figure>
       <Legend>
         <span>
-          <i style={{ background: v.colorIngresos }} /> Income (up)
+          <i style={{ background: theme.incomeText }} /> Income (up)
         </span>
         <span>
-          <i style={{ background: v.colorGastos }} /> Expenses (down)
+          <i style={{ background: theme.expenseText }} /> Expenses (down)
         </span>
       </Legend>
 
@@ -32,10 +32,10 @@ export function TrendChart({ data, current, half = 96 }) {
             aria-label={`${monthLabel(d.month)}: income ${money(d.income)}, expenses ${money(-d.expense)}, net ${money(d.income - d.expense)}`}
           >
             <div className="half up">
-              <Bar $color={v.colorIngresos} style={{ height: pct(d.income) }} />
+              <Bar $color={theme.incomeText} style={{ height: pct(d.income) }} />
             </div>
             <div className="half down">
-              <Bar $color={v.colorGastos} style={{ height: pct(d.expense) }} />
+              <Bar $color={theme.expenseText} style={{ height: pct(d.expense) }} />
             </div>
             <span className="label" aria-hidden="true">
               {shortMonth(d.month)}

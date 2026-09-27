@@ -34,7 +34,11 @@ export const Light ={
     border:"rgba(32,32,32,0.08)",
     textMuted:"#6b6b73",
     accent:"#9046FF",
-    accentSoft:"rgba(144,70,255,0.10)"
+    accentSoft:"rgba(144,70,255,0.10)",
+    // Income/expense for text and chart bars: raw v.colorIngresos/colorGastos fail on the light
+    // canvas (~2.5:1), so mix toward text (green 55%, red 60% -> ~5.3:1). Dark keeps the raw colors.
+    incomeText:"#3c703e",
+    expenseText:"#a54740"
 
 }
 export const Dark = {
@@ -73,5 +77,7 @@ export const Dark = {
     border:"rgba(255,255,255,0.08)",
     textMuted:"#9a9aa2",
     accent:"#BF94FF",
-    accentSoft:"rgba(191,148,255,0.14)"
+    accentSoft:"rgba(191,148,255,0.14)",
+    incomeText:"#53B257",
+    expenseText:"#FE6156"
   };
