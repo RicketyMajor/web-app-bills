@@ -14,7 +14,8 @@ import { TrendChart } from "../organisms/TrendChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
 import { MovementDialog } from "../organisms/MovementDialog";
 
-const unsigned = (n) => formatMoney(Math.abs(n));
+// formatMoney always signs; totals read better bare
+const unsigned = (n) => formatMoney(Math.abs(n)).replace("+", "");
 
 function greeting(hour) {
   if (hour < 12) return "Good morning";
@@ -48,85 +49,95 @@ export function HomeTemplate() {
         </PrimaryButton>
       </Header>
 
-      <Hero aria-labelledby="balance-label">
-        <span id="balance-label" className="overline">
-          {monthName} balance
-        </span>
-        {totals.isPending ? (
-          <Muted>Loading…</Muted>
-        ) : totals.isError ? (
-          <Alert role="alert">Couldn't load this month's totals.</Alert>
-        ) : (
-          <Balance totals={totals.data} />
-        )}
-      </Hero>
+      {recent.data?.length === 0 ? (
+        <Welcome>
+          <h2>Your month starts with one entry</h2>
+          <p>
+            Log an expense or your income and Home fills in with this month's balance, your 6-month trend
+            and where your money goes.
+          </p>
+          <Link to="/categories">Review your categories first →</Link>
+        </Welcome>
+      ) : (
+        <>
+          <Hero aria-label={`${monthName} balance`}>
+            {totals.isPending ? (
+              <Muted>Loading…</Muted>
+            ) : totals.isError ? (
+              <Alert role="alert">Couldn't load this month's totals.</Alert>
+            ) : (
+              <Balance totals={totals.data} monthName={monthName} />
+            )}
+          </Hero>
 
-      <Card aria-labelledby="trend-title">
-        <div className="head">
-          <h2 id="trend-title">Last 6 months</h2>
-          <Link to="/reports">Reports →</Link>
-        </div>
-        {trend.isPending ? (
-          <Muted>Loading…</Muted>
-        ) : trend.isError ? (
-          <Alert role="alert">Couldn't load the trend.</Alert>
-        ) : (
-          <TrendChart data={trend.data} current={month} half={48} />
-        )}
-      </Card>
+          <Card aria-labelledby="trend-title">
+            <div className="head">
+              <h2 id="trend-title">Last 6 months</h2>
+              <Link to="/reports">Reports →</Link>
+            </div>
+            {trend.isPending ? (
+              <Muted>Loading…</Muted>
+            ) : trend.isError ? (
+              <Alert role="alert">Couldn't load the trend.</Alert>
+            ) : trend.data.every((d) => d.income === 0 && d.expense === 0) ? (
+              <Muted>No movements in the last 6 months.</Muted>
+            ) : (
+              <TrendChart data={trend.data} current={month} half={48} />
+            )}
+          </Card>
 
-      <Columns>
-        <Card aria-labelledby="recent-title">
-          <div className="head">
-            <h2 id="recent-title">Recent</h2>
-            <Link to="/movements">See all →</Link>
-          </div>
-          {recent.isPending ? (
-            <Muted>Loading…</Muted>
-          ) : recent.isError ? (
-            <Alert role="alert">Couldn't load movements.</Alert>
-          ) : recent.data.length === 0 ? (
-            <Muted>No movements yet. Add your first expense to get started.</Muted>
-          ) : (
-            <Recent>
-              {recent.data.map((m) => {
-                const income = m.categories.type === "income";
-                return (
-                  <li key={m.id}>
-                    <CategorySwatch $color={m.categories.color}>{m.categories.icon}</CategorySwatch>
-                    <div className="main">
-                      <span className="title">{m.description || m.categories.name}</span>
-                      <span className="meta">
-                        {m.categories.name} · {shortDate(m.date)}
-                      </span>
-                    </div>
-                    <Amount $color={income ? v.colorIngresos : v.colorGastos}>
-                      {formatMoney(income ? m.amount : -m.amount)}
-                    </Amount>
-                  </li>
-                );
-              })}
-            </Recent>
-          )}
-        </Card>
+          <Columns>
+            <Card aria-labelledby="recent-title">
+              <div className="head">
+                <h2 id="recent-title">Recent</h2>
+                <Link to="/movements">See all →</Link>
+              </div>
+              {recent.isPending ? (
+                <Muted>Loading…</Muted>
+              ) : recent.isError ? (
+                <Alert role="alert">Couldn't load movements.</Alert>
+              ) : (
+                <Recent>
+                  {recent.data.map((m) => {
+                    const income = m.categories.type === "income";
+                    return (
+                      <li key={m.id}>
+                        <CategorySwatch $color={m.categories.color}>{m.categories.icon}</CategorySwatch>
+                        <div className="main">
+                          <span className="title">{m.description || m.categories.name}</span>
+                          <span className="meta">
+                            {m.categories.name} · {shortDate(m.date)}
+                          </span>
+                        </div>
+                        <Amount $color={income ? v.colorIngresos : v.colorGastos}>
+                          {formatMoney(income ? m.amount : -m.amount)}
+                        </Amount>
+                      </li>
+                    );
+                  })}
+                </Recent>
+              )}
+            </Card>
 
-        <Card aria-labelledby="where-title">
-          <div className="head">
-            <h2 id="where-title">Where it goes</h2>
-            <Link to="/reports">Reports →</Link>
-          </div>
-          {breakdown.isPending ? (
-            <Muted>Loading…</Muted>
-          ) : breakdown.isError ? (
-            <Alert role="alert">Couldn't load categories.</Alert>
-          ) : breakdown.data.length === 0 ? (
-            <Muted>No expenses in {monthName} yet.</Muted>
-          ) : (
-            // Top 3 by amount; % stays the share of the whole month
-            <CategoryBreakdown rows={breakdown.data} limit={3} />
-          )}
-        </Card>
-      </Columns>
+            <Card aria-labelledby="where-title">
+              <div className="head">
+                <h2 id="where-title">Where it goes</h2>
+                <Link to="/reports">Reports →</Link>
+              </div>
+              {breakdown.isPending ? (
+                <Muted>Loading…</Muted>
+              ) : breakdown.isError ? (
+                <Alert role="alert">Couldn't load categories.</Alert>
+              ) : breakdown.data.length === 0 ? (
+                <Muted>No expenses in {monthName} yet.</Muted>
+              ) : (
+                // Top 3 by amount; % stays the share of the whole month
+                <CategoryBreakdown rows={breakdown.data} limit={3} />
+              )}
+            </Card>
+          </Columns>
+        </>
+      )}
 
       {adding && (
         <MovementDialog movement={{ type: "expense", date: isoDate(now) }} onClose={() => setAdding(false)} />
@@ -135,21 +146,24 @@ export function HomeTemplate() {
   );
 }
 
-// Signature: how much of this month's income is already spent
-function Balance({ totals }) {
+// Signature: what's left of this month's income, and how much of it is already spent
+function Balance({ totals, monthName }) {
   const { income, expense, balance } = totals;
   const ratio = income > 0 ? expense / income : null;
-  const over = ratio !== null && ratio > 1;
+  const over = balance < 0;
 
-  let summary;
-  if (income === 0 && expense === 0) summary = "No movements this month yet.";
-  else if (ratio === null) summary = `${unsigned(expense)} spent · no income recorded yet`;
-  else if (over) summary = `${unsigned(expense - income)} more spent than earned`;
-  else summary = `${Math.round(ratio * 100)}% of income spent · ${unsigned(balance)} left`;
+  if (income === 0 && expense === 0) {
+    return <p className="caption">Nothing logged in {monthName} yet.</p>;
+  }
 
   return (
     <>
-      <strong className="figure">{formatMoney(balance)}</strong>
+      <p className="lead">
+        <strong className={over ? "figure over" : "figure"}>{unsigned(balance)}</strong>
+        <span className="caption">
+          {over ? `more spent than earned in ${monthName}` : `left from ${monthName}'s income`}
+        </span>
+      </p>
       {ratio !== null && (
         <Meter
           role="meter"
@@ -162,17 +176,20 @@ function Balance({ totals }) {
           <div style={{ width: `${Math.min(ratio, 1) * 100}%` }} />
         </Meter>
       )}
-      <p className="summary">{summary}</p>
-      <dl>
-        <div>
-          <dt>Income</dt>
-          <dd>{unsigned(income)}</dd>
-        </div>
-        <div>
-          <dt>Expenses</dt>
-          <dd>{unsigned(expense)}</dd>
-        </div>
-      </dl>
+      <p className="meta">
+        {ratio === null ? (
+          <span>
+            <b>{unsigned(expense)}</b> spent · no income logged yet
+          </span>
+        ) : (
+          <>
+            <span>{Math.round(ratio * 100)}% spent</span>
+            <span>
+              <b>{unsigned(expense)}</b> of <b>{unsigned(income)}</b> income
+            </span>
+          </>
+        )}
+      </p>
     </>
   );
 }
@@ -190,8 +207,9 @@ const Header = styled.header`
   align-items: center;
   gap: 16px;
 
+  /* Wide basis: on phones the button wraps below instead of squeezing the greeting */
   h1 {
-    flex: 1;
+    flex: 1 1 280px;
     font-size: 28px;
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -199,21 +217,20 @@ const Header = styled.header`
   }
 `;
 
-// The focal point: one big figure, everything else demoted to muted meta
+// The focal point: one big figure read as a sentence, everything else demoted to muted meta
 const Hero = styled.section`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   padding: 24px;
   border-radius: 16px;
   background: ${({ theme }) => theme.accentSoft};
 
-  .overline {
-    color: ${({ theme }) => theme.textMuted};
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  .lead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 12px;
   }
   .figure {
     font-size: 44px;
@@ -221,25 +238,27 @@ const Hero = styled.section`
     line-height: 1.1;
     letter-spacing: -0.03em;
   }
-  .summary {
-    font-size: 14px;
+  .figure.over {
+    color: ${v.colorGastos};
+  }
+  /* On the tinted surface, secondary text is the foreground at 72% (muted gray drops below 4.5:1) */
+  .caption {
+    color: color-mix(in srgb, ${({ theme }) => theme.text} 72%, transparent);
+    font-size: 15px;
     font-weight: 500;
   }
-  dl {
+  .meta {
     display: flex;
-    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 16px;
+    color: color-mix(in srgb, ${({ theme }) => theme.text} 72%, transparent);
     font-size: 13px;
-  }
-  dl div {
-    display: flex;
-    gap: 6px;
-  }
-  dt {
-    color: ${({ theme }) => theme.textMuted};
-  }
-  dd {
-    font-weight: 600;
     font-variant-numeric: tabular-nums;
+  }
+  .meta b {
+    color: ${({ theme }) => theme.text};
+    font-weight: 600;
   }
 
   @media (max-width: ${v.bplisa}) {
@@ -253,7 +272,6 @@ const Hero = styled.section`
 // Accent while within income; expense red once over (the summary text says so too)
 const Meter = styled.div`
   height: 8px;
-  max-width: 480px;
   border-radius: 4px;
   background: ${({ theme }) => theme.border};
 
@@ -261,6 +279,35 @@ const Meter = styled.div`
     height: 100%;
     border-radius: 4px;
     background: ${({ $over, theme }) => ($over ? v.colorGastos : theme.accent)};
+  }
+`;
+
+const Welcome = styled.section`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 32px 24px;
+  border-radius: 16px;
+  background: ${({ theme }) => theme.accentSoft};
+
+  h2 {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  p {
+    max-width: 52ch;
+    color: color-mix(in srgb, ${({ theme }) => theme.text} 72%, transparent);
+    font-size: 15px;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  a {
+    color: ${({ theme }) => theme.accent};
+    font-size: 14px;
+    font-weight: 500;
   }
 `;
 
