@@ -4,13 +4,32 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 
 **Live:** https://web-app-bills.vercel.app
 
+![Home dashboard](docs/screenshots/home.png)
+
+| Movements | Reports |
+|---|---|
+| ![Movements by month](docs/screenshots/movements.png) | ![Reports: 6-month trend and breakdown by category](docs/screenshots/reports.png) |
+| **Settings** | **Sign in** |
+| ![Settings: name, currency, delete account](docs/screenshots/settings.png) | ![Sign-in page with feature carousel](docs/screenshots/login.png) |
+
+<details>
+<summary>Dark theme</summary>
+
+![Home dashboard in dark theme](docs/screenshots/home-dark.png)
+
+</details>
+
+<sub>Screenshots use demo data.</sub>
+
 ## Features
 
 - **Google sign-in** via Supabase Auth. Each account only sees its own data (Postgres row-level security).
+- **Home**: what's left of this month's income, a 6-month trend, recent movements and top categories.
 - **Categories** for income and expenses, with emoji and color.
 - **Movements** by month: amount, category, date, description, paid/pending. Monthly income, expense and balance totals.
 - **Reports**: 6-month income vs. expense trend and a ranked breakdown by category, each with an accessible table view.
-- **Light / dark theme**, following the OS preference on first visit.
+- **Settings**: display name, currency (formats every amount), and self-service account deletion.
+- **Light / dark theme**, following the OS preference until you pick one; the choice syncs across devices.
 - Responsive: sidebar on desktop, bottom bar on mobile.
 
 ## Stack
@@ -47,13 +66,15 @@ Only the anon key belongs in the client; the data is protected by RLS. Never use
 
 ### Database
 
-Run `supabase/migrations/20260925000000_init_schema.sql` in the Supabase SQL Editor. It creates:
+Run the files in `supabase/migrations/` in order in the Supabase SQL Editor. `20260925000000_init_schema.sql` creates:
 
 - `profiles` — one row per user, created by a trigger on sign-up (which also seeds 6 default categories).
 - `categories` — `name`, `type` (`income` | `expense`), `icon` (emoji), `color`.
 - `movements` — `amount`, `date`, `description`, `paid`, linked to a category. The type comes from the category.
 
 Every table has a `user_id` and RLS policies limiting access to `auth.uid()`.
+
+`20260927000000_settings.sql` makes `profiles.theme` nullable (null = follow the OS) and adds `delete_account()`, a `security definer` function that deletes the caller's auth user (cascading to their data).
 
 ### Google sign-in
 
@@ -89,7 +110,7 @@ src/
     atoms/ molecules/ organisms/ templates/   # atomic design
   pages/        # one thin wrapper per route (lazy-loaded)
   routers/      # routes + auth guards
-  hooks/        # TanStack Query hooks (categories, movements, totals, reports)
+  hooks/        # TanStack Query hooks (categories, movements, totals, reports, profile)
   store/        # Zustand stores (auth, theme, month)
   supabase/     # Supabase client
   styles/       # themes, design tokens, global styles
