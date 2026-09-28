@@ -26,7 +26,7 @@ export function MovementsTemplate() {
   const month = useMonthStore((s) => s.month);
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
-  const { data: totals } = useMonthTotals(month);
+  const { data: totals, isPlaceholderData: staleTotals } = useMonthTotals(month);
   const movements = useMovements(month, type);
   const remove = useDeleteMovement();
 
@@ -55,7 +55,8 @@ export function MovementsTemplate() {
       </PageHeader>
 
       {/* Outside MonthSlide: the figures count from the previous month's values */}
-      <Kpis>
+      {/* Dimmed while they still show the previous month (placeholder data) */}
+      <Kpis $stale={staleTotals} aria-busy={staleTotals}>
         <Kpi label="Income" value={totals?.income} sign={1} />
         <Kpi label="Expenses" value={totals && -totals.expense} sign={-1} />
         <Kpi label="Net" value={totals?.balance} sign={Math.sign(totals?.balance ?? 0)} />
@@ -175,6 +176,8 @@ const Kpis = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  opacity: ${({ $stale }) => ($stale ? 0.5 : 1)};
+  transition: opacity 150ms;
 
   @media (max-width: ${v.bplisa}) {
     grid-template-columns: 1fr;
