@@ -17,6 +17,7 @@ import { Skeleton } from "../atoms/Skeleton";
 import { Amount } from "../atoms/Amount";
 import { AnimatedNumber } from "../atoms/AnimatedNumber";
 import { Badge } from "../atoms/Badge";
+import { IconButton } from "../atoms/IconButton";
 import { PageHeader } from "../molecules/PageHeader";
 import { LoadError } from "../molecules/LoadError";
 import { MonthSelector } from "../molecules/MonthSelector";
@@ -156,6 +157,7 @@ export function MovementsTemplate() {
                       <div className="main">
                         <span className="title">{title}</span>
                         <span className="meta">
+                          {!!m.recurring_id && <v.iconoRepetir role="img" aria-label="Repeats" title="Repeats" />}
                           <span>{m.categories.name}</span>
                           <span className="m-only">· {shortDate(m.date)}</span>
                           {!m.paid && <Badge className="m-only">Pending</Badge>}
@@ -371,33 +373,6 @@ const Table = styled(Card)`
     .actions {
       opacity: 1;
     }
-  }
-`;
-
-const IconButton = styled.button`
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 6px;
-  background: none;
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 17px;
-  cursor: pointer;
-  transition: background-color 150ms, color 150ms;
-
-  &:hover {
-    background: ${({ theme }) => theme.border};
-    color: ${({ theme }) => theme.text};
-  }
-  &.danger:hover {
-    color: ${({ theme }) => theme.expenseText};
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
   }
 `;
 

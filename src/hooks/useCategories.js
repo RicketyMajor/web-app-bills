@@ -26,11 +26,12 @@ export function useCategories(type) {
   });
 }
 
-// Movement rows show the category's name, icon and color
+// Movement rows show the category's name, icon and color; deleting one cascades its recurring rules
 const invalidate = (queryClient) =>
   Promise.all([
     queryClient.invalidateQueries({ queryKey: ["categories"] }),
     queryClient.invalidateQueries({ queryKey: ["movements"] }),
+    queryClient.invalidateQueries({ queryKey: ["recurring"] }),
   ]);
 
 // Inserts when there's no id, updates otherwise.

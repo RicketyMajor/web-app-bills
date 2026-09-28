@@ -5,8 +5,10 @@ import { motion } from "motion/react";
 import { Sidebar } from "../organisms/Sidebar";
 import { v } from "../../styles/variables";
 import { ease } from "../../styles/motion";
+import { useSyncRecurring } from "../../hooks/useRecurring";
 
 export function AppLayout() {
+  useSyncRecurring(); // spec 15: create this month's recurring movements
   const { pathname } = useLocation();
   return (
     <Container>

@@ -45,6 +45,7 @@ export function ToPayList() {
                 <div className="main">
                   <span className="title">{title}</span>
                   <span className="meta">
+                    {!!m.recurring_id && <v.iconoRepetir role="img" aria-label="Repeats" title="Repeats" />}
                     {m.categories.name} · {due.late ? <Badge>{due.text}</Badge> : due.text}
                   </span>
                 </div>
@@ -121,6 +122,10 @@ const List = styled.ul`
   .meta {
     color: ${({ theme }) => theme.textMuted};
     font-size: 12px;
+  }
+  .meta svg {
+    margin-right: 4px;
+    vertical-align: -0.125em;
   }
   button {
     display: grid;

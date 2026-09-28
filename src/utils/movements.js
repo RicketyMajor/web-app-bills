@@ -5,6 +5,7 @@ const parse = (s) => {
   const [y, m, d] = s.split("-").map(Number);
   return new Date(y, m - 1, d);
 };
+export { parse as parseDate };
 
 export const monthStart = (d) => isoDate(new Date(d.getFullYear(), d.getMonth(), 1));
 

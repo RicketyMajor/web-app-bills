@@ -1,4 +1,4 @@
-import { RiDeleteBin2Line, RiDownload2Line, RiEditLine } from "react-icons/ri";
+import { RiDeleteBin2Line, RiDownload2Line, RiEditLine, RiRepeatLine } from "react-icons/ri";
 import { IoIosArrowDown } from "react-icons/io";
 import { CgMathPlus } from "react-icons/cg";
 import { BsGoogle } from "react-icons/bs";
@@ -25,6 +25,7 @@ export const v = {
   iconeliminarTabla: RiDeleteBin2Line,
   iconoFlechabajo: IoIosArrowDown,
   iconoDescargar: RiDownload2Line,
+  iconoRepetir: RiRepeatLine,
   agregar: CgMathPlus,
   iconogoogle: BsGoogle,
 };

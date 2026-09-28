@@ -14,6 +14,7 @@ import { PageHeader } from "../molecules/PageHeader";
 import { LoadError } from "../molecules/LoadError";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { CategoryDialog } from "../organisms/CategoryDialog";
+import { IconButton } from "../atoms/IconButton";
 
 const currentMonth = monthStart(new Date());
 
@@ -159,32 +160,6 @@ const Grid = styled.div`
     .actions {
       opacity: 1;
     }
-  }
-`;
-
-const IconButton = styled.button`
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 6px;
-  background: none;
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 17px;
-  cursor: pointer;
-  transition: background-color 150ms, color 150ms;
-
-  &:hover {
-    background: ${({ theme }) => theme.border};
-    color: ${({ theme }) => theme.text};
-  }
-  &.danger:hover {
-    color: ${({ theme }) => theme.expenseText};
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
   }
 `;
 

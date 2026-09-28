@@ -11,7 +11,7 @@ export function useMovements(month, type, all = false) {
       // ponytail: PostgREST caps at 1000 rows; move filters server-side (view/RPC) if a type's history outgrows it
       let query = supabase
         .from("movements")
-        .select("id, amount, description, date, paid, category_id, categories!inner(name, icon, color, type)")
+        .select("id, amount, description, date, paid, category_id, recurring_id, categories!inner(name, icon, color, type)")
         .eq("categories.type", type);
       if (!all) query = query.gte("date", month).lt("date", shiftMonth(month, 1));
       const { data, error } = await query.order("date", { ascending: false }).order("id", { ascending: false });
@@ -45,7 +45,7 @@ export function usePendingMovements(limit = 6) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("movements")
-        .select("id, amount, description, date, paid, category_id, categories!inner(name, icon, color, type)")
+        .select("id, amount, description, date, paid, category_id, recurring_id, categories!inner(name, icon, color, type)")
         .eq("paid", false)
         .order("date", { ascending: true })
         .order("id", { ascending: true })
