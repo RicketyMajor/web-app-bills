@@ -33,6 +33,7 @@ export function CategoryDialog({ category, onClose }) {
         name: form.name.trim(),
         icon: form.icon,
         color: form.color,
+        budget: form.budget || null, // income dialogs have no field → null
       },
       { onSuccess: onClose }
     );
@@ -81,6 +82,22 @@ export function CategoryDialog({ category, onClose }) {
           <span>Color</span>
           <input name="color" type="color" defaultValue={category.color ?? "#9046FF"} />
         </label>
+
+        {category.type === "expense" && (
+          <label>
+            <span>Monthly budget</span>
+            <input
+              name="budget"
+              type="number"
+              inputMode="decimal"
+              min="0.01"
+              max="9999999999.99"
+              step="0.01"
+              placeholder="No limit"
+              defaultValue={category.budget ?? ""}
+            />
+          </label>
+        )}
 
         {save.isError && <p role="alert">{categoryErrorMessage(save.error)}</p>}
 

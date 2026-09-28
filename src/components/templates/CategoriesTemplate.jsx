@@ -17,6 +17,13 @@ import { CategoryDialog } from "../organisms/CategoryDialog";
 
 const currentMonth = monthStart(new Date());
 
+// "120 of 300 this month" when budgeted; otherwise the plain total
+function tileTotal(spent, budget, money) {
+  const bare = (n) => money(n).replace("+", "");
+  if (budget) return `${bare(spent ?? 0)} of ${bare(budget)} this month`;
+  return spent == null ? "Nothing this month" : `${bare(spent)} this month`;
+}
+
 export function CategoriesTemplate() {
   const money = useMoney();
   const [type, setType] = useState("expense");
@@ -68,9 +75,7 @@ export function CategoriesTemplate() {
                 <div className="body">
                   <span className="name">{c.name}</span>
                   <span className="total">
-                    {totalById.has(c.id)
-                      ? `${money(totalById.get(c.id)).replace("+", "")} this month`
-                      : "Nothing this month"}
+                    {tileTotal(totalById.get(c.id), c.budget, money)}
                   </span>
                 </div>
                 <div className="actions">

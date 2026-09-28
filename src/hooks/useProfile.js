@@ -10,7 +10,7 @@ export function useProfile() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, currency, theme")
+        .select("full_name, currency, theme, monthly_budget")
         .single();
       if (error) throw error;
       return data;

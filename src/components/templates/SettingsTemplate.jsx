@@ -26,6 +26,7 @@ export function SettingsTemplate() {
     update.mutate({
       full_name: form.get("full_name").trim() || null,
       currency: form.get("currency"),
+      monthly_budget: form.get("monthly_budget") || null,
     });
   };
 
@@ -57,6 +58,19 @@ export function SettingsTemplate() {
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            <span>Monthly budget</span>
+            <input
+              name="monthly_budget"
+              type="number"
+              inputMode="decimal"
+              min="0.01"
+              max="9999999999.99"
+              step="0.01"
+              placeholder="No budget"
+              defaultValue={profile.monthly_budget ?? ""}
+            />
           </label>
           <div className="actions">
             <PrimaryButton type="submit" disabled={update.isPending}>
