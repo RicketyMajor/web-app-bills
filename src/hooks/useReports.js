@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
-import { shiftMonth } from "../utils/movements";
-import { lastMonths, monthlyTotals, totalsByCategory } from "../utils/reports";
+import { isoDate, shiftMonth } from "../utils/movements";
+import { cumulativeByDay, lastMonths, monthlyTotals, totalsByCategory } from "../utils/reports";
 
 // Keys live under 'movements' so movement and category mutations refresh them.
 export function useMonthlyTrend(month, n = 6) {
@@ -32,6 +32,23 @@ export function useCategoryBreakdown(month, type) {
         .lt("date", shiftMonth(month, 1));
       if (error) throw error;
       return totalsByCategory(data);
+    },
+  });
+}
+
+// This month vs last month, day by day (Home). One query covering both months.
+export function useCumulativeSpending(month) {
+  return useQuery({
+    queryKey: ["movements", "cumulative", month],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("movements")
+        .select("amount, date, categories!inner(type)")
+        .eq("categories.type", "expense")
+        .gte("date", shiftMonth(month, -1))
+        .lt("date", shiftMonth(month, 1));
+      if (error) throw error;
+      return cumulativeByDay(data, month, isoDate(new Date()));
     },
   });
 }

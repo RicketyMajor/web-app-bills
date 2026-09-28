@@ -38,6 +38,24 @@ export function useRecentMovements(limit = 5) {
   });
 }
 
+// Not paid yet, any month, oldest first (Home "To pay"). Under 'movements' so saves refresh it.
+export function usePendingMovements(limit = 6) {
+  return useQuery({
+    queryKey: ["movements", "pending", limit],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("movements")
+        .select("id, amount, description, date, paid, category_id, categories!inner(name, icon, color, type)")
+        .eq("paid", false)
+        .order("date", { ascending: true })
+        .order("id", { ascending: true })
+        .limit(limit);
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 // Lists and every month's totals depend on movements
 const invalidate = (queryClient) =>
   Promise.all([
