@@ -35,3 +35,6 @@ context/
 
 # Brainstorming companion mockups
 .superpowers/
+
+# playwright-cli snapshots and logs
+.playwright-cli/
