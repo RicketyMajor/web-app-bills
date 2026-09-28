@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
 import { rowMotion } from "../../styles/motion";
-import { isoDate, monthStart, shortDate } from "../../utils/movements";
+import { activeFilterCount, filterMovements, isoDate, monthStart, shortDate, sumTotals } from "../../utils/movements";
 import { useMonthStore } from "../../store/monthStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useDeleteMovement, useMovements } from "../../hooks/useMovements";
@@ -21,6 +22,9 @@ import { MonthSelector } from "../molecules/MonthSelector";
 import { MonthSlide } from "../molecules/MonthSlide";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { MovementDialog } from "../organisms/MovementDialog";
+import { MovementFilters } from "../organisms/MovementFilters";
+
+const FILTER_KEYS = ["q", "cat", "status", "min", "max", "all"];
 
 export function MovementsTemplate() {
   const money = useMoney();
@@ -28,7 +32,26 @@ export function MovementsTemplate() {
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
   const { data: totals, isPlaceholderData: staleTotals } = useMonthTotals(month);
-  const movements = useMovements(month, type);
+  // Filters live in the URL: reload and Back keep them
+  const [params, setParams] = useSearchParams();
+  const filters = Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) ?? ""]));
+  const all = filters.all === "1";
+  const filtering = filters.q.trim() !== "" || activeFilterCount(filters) > 0;
+  const movements = useMovements(month, type, all);
+  const rows = movements.data && filterMovements(movements.data, filters);
+
+  // replace: typing shouldn't stack history entries
+  const setFilter = (key, value) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true }
+    );
+  const clearFilters = () => setParams({}, { replace: true });
   const remove = useDeleteMovement();
 
   // New movements default to today when viewing the current month
@@ -42,7 +65,7 @@ export function MovementsTemplate() {
   return (
     <Container>
       <PageHeader title="Movements">
-        <MonthSelector />
+        <MonthSelector disabled={all} />
         <PrimaryButton type="button" onClick={() => setEditing({ type, date: newDate })}>
           <v.agregar aria-hidden="true" />
           <StableLabel>
@@ -55,21 +78,32 @@ export function MovementsTemplate() {
         </PrimaryButton>
       </PageHeader>
 
-      {/* Outside MonthSlide: the figures count from the previous month's values */}
-      {/* Dimmed while they still show the previous month (placeholder data) */}
-      <Kpis $stale={staleTotals} aria-busy={staleTotals}>
-        <Kpi label="Income" value={totals?.income} sign={1} />
-        <Kpi label="Expenses" value={totals && -totals.expense} sign={-1} />
-        <Kpi label="Net" value={totals?.balance} sign={Math.sign(totals?.balance ?? 0)} />
-      </Kpis>
+      {filtering ? (
+        <Summary aria-live="polite">
+          {rows
+            ? `${rows.length} result${rows.length === 1 ? "" : "s"} · ${money(sumTotals(rows)[type]).replace("+", "")}`
+            : movements.isPending && "Searching…"}
+        </Summary>
+      ) : (
+        /* Outside MonthSlide: the figures count from the previous month's values.
+           Dimmed while they still show the previous month (placeholder data). */
+        <Kpis $stale={staleTotals} aria-busy={staleTotals}>
+          <Kpi label="Income" value={totals?.income} sign={1} />
+          <Kpi label="Expenses" value={totals && -totals.expense} sign={-1} />
+          <Kpi label="Net" value={totals?.balance} sign={Math.sign(totals?.balance ?? 0)} />
+        </Kpis>
+      )}
 
       <SegmentedControl
         value={type}
         onChange={(t) => {
           setType(t);
+          setFilter("cat", "");
           remove.reset();
         }}
       />
+
+      <MovementFilters type={type} values={filters} onChange={setFilter} onClear={clearFilters} />
 
       {remove.isError && <Alert role="alert">Couldn't delete the movement. Please try again.</Alert>}
 
@@ -82,8 +116,17 @@ export function MovementsTemplate() {
           </Card>
         ) : movements.isError ? (
           <LoadError message="Couldn't load movements." onRetry={movements.refetch} />
-        ) : movements.data.length === 0 ? (
-          <Muted>No {type === "income" ? "income" : "expenses"} this month.</Muted>
+        ) : rows.length === 0 ? (
+          filtering ? (
+            <Empty>
+              <p>No movements match these filters.</p>
+              <button type="button" onClick={clearFilters}>
+                Clear filters
+              </button>
+            </Empty>
+          ) : (
+            <Muted>No {type === "income" ? "income" : "expenses"} this month.</Muted>
+          )
         ) : (
           <Table as="div">
             <div className="thead" aria-hidden="true">
@@ -96,7 +139,7 @@ export function MovementsTemplate() {
             </div>
             <ul>
               <AnimatePresence>
-                {movements.data.map((m, i) => {
+                {rows.map((m, i) => {
                   const title = m.description || m.categories.name;
                   return (
                     <motion.li key={m.id} {...rowMotion(i)}>
@@ -224,7 +267,7 @@ const Table = styled(Card)`
   .thead,
   li {
     display: grid;
-    grid-template-columns: 36px minmax(0, 1fr) 72px 80px 120px 72px;
+    grid-template-columns: 36px minmax(0, 1fr) 96px 80px 120px 72px;
     align-items: center;
     gap: 12px;
     padding: 0 16px;
@@ -350,6 +393,34 @@ const IconButton = styled.button`
 const Muted = styled.p`
   color: ${({ theme }) => theme.textMuted};
   font-size: 14px;
+`;
+
+const Summary = styled.p`
+  color: ${({ theme }) => theme.textMuted};
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+`;
+
+const Empty = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  color: ${({ theme }) => theme.textMuted};
+  font-size: 14px;
+
+  button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: ${({ theme }) => theme.accent};
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  button:hover {
+    text-decoration: underline;
+  }
 `;
 
 const Alert = styled.p`

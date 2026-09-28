@@ -2,19 +2,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
 import { shiftMonth } from "../utils/movements";
 
-// type filters through the category (movements have no type column)
-export function useMovements(month, type) {
+// type filters through the category (movements have no type column).
+// all = every month (Movements search); filters run client-side on these rows.
+export function useMovements(month, type, all = false) {
   return useQuery({
-    queryKey: ["movements", month, type],
+    queryKey: ["movements", all ? "all" : month, type],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // ponytail: PostgREST caps at 1000 rows; move filters server-side (view/RPC) if a type's history outgrows it
+      let query = supabase
         .from("movements")
         .select("id, amount, description, date, paid, category_id, categories!inner(name, icon, color, type)")
-        .eq("categories.type", type)
-        .gte("date", month)
-        .lt("date", shiftMonth(month, 1))
-        .order("date", { ascending: false })
-        .order("id", { ascending: false });
+        .eq("categories.type", type);
+      if (!all) query = query.gte("date", month).lt("date", shiftMonth(month, 1));
+      const { data, error } = await query.order("date", { ascending: false }).order("id", { ascending: false });
       if (error) throw error;
       return data;
     },

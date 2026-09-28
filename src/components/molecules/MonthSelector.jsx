@@ -5,14 +5,14 @@ import { useMonthStore } from "../../store/monthStore";
 import { monthLabel } from "../../utils/movements";
 import { ease } from "../../styles/motion";
 
-export function MonthSelector() {
+export function MonthSelector({ disabled = false }) {
   const month = useMonthStore((s) => s.month);
   const dir = useMonthStore((s) => s.dir);
   const shift = useMonthStore((s) => s.shift);
 
   return (
-    <Container>
-      <button type="button" onClick={() => shift(-1)} aria-label="Previous month">
+    <Container $disabled={disabled} title={disabled ? "Showing all months" : undefined}>
+      <button type="button" onClick={() => shift(-1)} disabled={disabled} aria-label="Previous month">
         <RiArrowLeftSLine aria-hidden="true" />
       </button>
       <span className="label" aria-live="polite">
@@ -25,7 +25,7 @@ export function MonthSelector() {
           {monthLabel(month)}
         </motion.span>
       </span>
-      <button type="button" onClick={() => shift(1)} aria-label="Next month">
+      <button type="button" onClick={() => shift(1)} disabled={disabled} aria-label="Next month">
         <RiArrowRightSLine aria-hidden="true" />
       </button>
     </Container>
@@ -40,6 +40,8 @@ const Container = styled.div`
   border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
   background: ${({ theme }) => theme.surface};
+  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
+  transition: opacity 150ms;
 
   .label {
     display: grid;
@@ -68,6 +70,10 @@ const Container = styled.div`
     }
     &:active {
       transform: scale(0.97);
+    }
+    &:disabled {
+      cursor: default;
+      pointer-events: none;
     }
   }
 `;

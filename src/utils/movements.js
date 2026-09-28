@@ -16,8 +16,12 @@ export const shiftMonth = (start, n) => {
 export const monthLabel = (start) =>
   parse(start).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-export const shortDate = (date) =>
-  parse(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+// "Sep 24"; other years add it: "Mar 5, 2020"
+export const shortDate = (date) => {
+  const d = parse(date);
+  const year = d.getFullYear() === new Date().getFullYear() ? undefined : "numeric";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year });
+};
 
 // When a pending movement is due, relative to today. Neutral words: works for bills and expected income.
 export function dueLabel(date, today) {
@@ -40,3 +44,24 @@ export function sumTotals(rows) {
     balance: (cents.income - cents.expense) / 100,
   };
 }
+
+// Lowercase without accents: "Café" matches "cafe"
+const fold = (s) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+const cents = (amount) => Math.round(Number(amount) * 100);
+
+// Movements filters (URL params as strings; "" = off). All of them must match.
+export function filterMovements(rows, { q = "", cat = "", status = "", min = "", max = "" }) {
+  const needle = fold(q.trim());
+  return rows.filter(
+    (m) =>
+      (!needle || fold(`${m.description ?? ""} ${m.categories.name}`).includes(needle)) &&
+      (!cat || m.category_id === Number(cat)) &&
+      (!status || m.paid === (status === "paid")) &&
+      (min === "" || cents(m.amount) >= cents(min)) &&
+      (max === "" || cents(m.amount) <= cents(max))
+  );
+}
+
+// "Filters (N)": the search box is always visible, so it isn't counted; min–max is one filter
+export const activeFilterCount = ({ cat, status, min, max, all }) =>
+  [cat, status, min || max, all === "1"].filter(Boolean).length;
