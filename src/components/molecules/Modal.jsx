@@ -107,6 +107,10 @@ const Dialog = styled.dialog`
     letter-spacing: 0;
     text-transform: none;
   }
+  .hint {
+    color: ${({ theme }) => theme.textMuted};
+    font-size: 13px;
+  }
   p[role="alert"] {
     color: ${v.colorError};
     font-size: 14px;

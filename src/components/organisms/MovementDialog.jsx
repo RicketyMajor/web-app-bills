@@ -3,10 +3,23 @@ import { Link } from "react-router-dom";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { useCategories } from "../../hooks/useCategories";
 import { useSaveMovement } from "../../hooks/useMovements";
+import { useAddRecurring } from "../../hooks/useRecurring";
+import { repeatLabel } from "../../utils/recurring";
+
+const REPEATS = [
+  { value: "", label: "Never" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "yearly", label: "Yearly" },
+];
 
 // Create (no movement.id) or edit a movement of movement.type. Mount it to open it.
 export function MovementDialog({ movement, onClose }) {
   const save = useSaveMovement();
+  const addRecurring = useAddRecurring();
+  // Repeat is offered only when creating; its hint follows the chosen date
+  const [repeat, setRepeat] = useState("");
+  const [date, setDate] = useState(movement.date);
   // Unpaid: the date is when it's due
   const [paid, setPaid] = useState(movement.paid ?? true);
   const { data: categories, isPending, isError } = useCategories(movement.type);
@@ -14,18 +27,17 @@ export function MovementDialog({ movement, onClose }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    save.mutate(
-      {
-        id: movement.id,
-        amount: form.get("amount"),
-        date: form.get("date"),
-        category_id: Number(form.get("category_id")),
-        description: form.get("description").trim() || null,
-        paid: form.get("paid") === "on",
-      },
-      { onSuccess: onClose }
-    );
+    const fields = {
+      amount: form.get("amount"),
+      date: form.get("date"),
+      category_id: Number(form.get("category_id")),
+      description: form.get("description").trim() || null,
+      paid: form.get("paid") === "on",
+    };
+    if (repeat) addRecurring.mutate({ ...fields, frequency: repeat }, { onSuccess: onClose });
+    else save.mutate({ id: movement.id, ...fields }, { onSuccess: onClose });
   };
+  const busy = save.isPending || addRecurring.isPending;
 
   const title = `${movement.id ? "Edit" : "New"} ${movement.type}`;
 
@@ -86,8 +98,34 @@ export function MovementDialog({ movement, onClose }) {
 
         <label>
           <span>{paid ? "Date" : "Due date"}</span>
-          <input name="date" type="date" required defaultValue={movement.date} />
+          <input
+            name="date"
+            type="date"
+            required
+            defaultValue={movement.date}
+            onChange={(e) => setDate(e.target.value)}
+          />
         </label>
+
+        {!movement.id && (
+          <label>
+            <span>Repeat</span>
+            <select value={repeat} onChange={(e) => setRepeat(e.target.value)}>
+              {REPEATS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            {repeat && date && (
+              <small className="hint">
+                {repeatLabel(repeat, date)}
+                {repeat === "monthly" && Number(date.slice(8)) > 28 && " (last day in shorter months)"}. Added as
+                pending each time.
+              </small>
+            )}
+          </label>
+        )}
 
         <label>
           <span>Description</span>
@@ -99,14 +137,14 @@ export function MovementDialog({ movement, onClose }) {
           <span>Paid</span>
         </label>
 
-        {save.isError && <p role="alert">Couldn't save the movement. Please try again.</p>}
+        {(save.isError || addRecurring.isError) && <p role="alert">Couldn't save the movement. Please try again.</p>}
 
         <ModalActions>
           <button type="button" onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className="primary" disabled={save.isPending}>
-            {save.isPending ? "Saving…" : "Save"}
+          <button type="submit" className="primary" disabled={busy}>
+            {busy ? "Saving…" : "Save"}
           </button>
         </ModalActions>
       </form>
