@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
 import { rowMotion } from "../../styles/motion";
 import { activeFilterCount, filterMovements, isoDate, monthStart, shortDate, sumTotals } from "../../utils/movements";
+import { downloadCsv, toCsv } from "../../utils/csv";
 import { useMonthStore } from "../../store/monthStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useDeleteMovement, useMovements } from "../../hooks/useMovements";
@@ -103,7 +104,17 @@ export function MovementsTemplate() {
         }}
       />
 
-      <MovementFilters type={type} values={filters} onChange={setFilter} onClear={clearFilters} />
+      <MovementFilters type={type} values={filters} onChange={setFilter} onClear={clearFilters}>
+        <button
+          type="button"
+          className="tool"
+          disabled={!rows?.length}
+          onClick={() => downloadCsv(`movements-${all ? "all" : month.slice(0, 7)}-${type}.csv`, toCsv(rows))}
+        >
+          <v.iconoDescargar aria-hidden="true" />
+          Export CSV
+        </button>
+      </MovementFilters>
 
       {remove.isError && <Alert role="alert">Couldn't delete the movement. Please try again.</Alert>}
 
