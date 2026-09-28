@@ -4,7 +4,8 @@ import { useMoney } from "../../hooks/useProfile";
 import { ease } from "../../styles/motion";
 
 const W = 300;
-const H = 96;
+// Wide ratio: the SVG scales with the card width, so this keeps it ~115px tall on desktop
+const H = 64;
 
 // Running spend this month (solid, drawn in) vs last month (dashed), day by day.
 // The aria-label carries the comparison the picture shows.

@@ -1,17 +1,26 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
+import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
+import { ease, rowMotion } from "../../styles/motion";
 import { useAuthStore } from "../../store/authStore";
-import { isoDate, monthLabel, monthStart, shortDate } from "../../utils/movements";
+import { isoDate, monthLabel, monthStart, shiftMonth, shortDate } from "../../utils/movements";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useRecentMovements } from "../../hooks/useMovements";
-import { useCategoryBreakdown, useMonthlyTrend } from "../../hooks/useReports";
+import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
 import { useMoney, useProfile } from "../../hooks/useProfile";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { CategorySwatch } from "../atoms/CategorySwatch";
-import { TrendChart } from "../organisms/TrendChart";
+import { Card } from "../atoms/Card";
+import { Skeleton } from "../atoms/Skeleton";
+import { Amount } from "../atoms/Amount";
+import { AnimatedNumber } from "../atoms/AnimatedNumber";
+import { PageHeader } from "../molecules/PageHeader";
+import { LoadError } from "../molecules/LoadError";
+import { CumulativeChart } from "../organisms/CumulativeChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
+import { ToPayList } from "../organisms/ToPayList";
 import { MovementDialog } from "../organisms/MovementDialog";
 
 function greeting(hour) {
@@ -20,7 +29,8 @@ function greeting(hour) {
   return "Good evening";
 }
 
-// Home is always "how am I doing now": the current month, independent of the month selector
+// Home is always "how am I doing now": the current month, independent of the month selector.
+// Layout B (spec 12): main column (balance, recent) + side column (to pay, where it goes).
 export function HomeTemplate() {
   const money = useMoney();
   const user = useAuthStore((s) => s.session?.user);
@@ -30,113 +40,115 @@ export function HomeTemplate() {
   const now = new Date();
   const month = monthStart(now);
   const monthName = monthLabel(month).split(" ")[0];
+  const prevName = monthLabel(shiftMonth(month, -1)).split(" ")[0];
   const [adding, setAdding] = useState(false);
 
   const totals = useMonthTotals(month);
-  const trend = useMonthlyTrend(month);
-  const recent = useRecentMovements(5);
+  const cumulative = useCumulativeSpending(month);
+  const recent = useRecentMovements(6);
   const breakdown = useCategoryBreakdown(month, "expense");
 
   return (
     <Container>
-      <Header>
-        <h1>
-          {greeting(now.getHours())}, {firstName}
-        </h1>
+      <PageHeader title={`${greeting(now.getHours())}, ${firstName}`}>
         <PrimaryButton type="button" onClick={() => setAdding(true)}>
           <v.agregar aria-hidden="true" />
           New expense
         </PrimaryButton>
-      </Header>
+      </PageHeader>
 
       {recent.data?.length === 0 ? (
         <Welcome>
           <h2>Your month starts with one entry</h2>
           <p>
-            Log an expense or your income and Home fills in with this month's balance, your 6-month trend
-            and where your money goes.
+            Log an expense or your income and Home fills in with this month's balance, how your spending
+            compares with last month, and what's still to pay.
           </p>
           <Link to="/categories">Review your categories first →</Link>
         </Welcome>
       ) : (
-        <>
-          <Hero aria-label={`${monthName} balance`}>
-            {totals.isPending ? (
-              <Muted>Loading…</Muted>
-            ) : totals.isError ? (
-              <Alert role="alert">Couldn't load this month's totals.</Alert>
-            ) : (
-              <Balance totals={totals.data} monthName={monthName} />
-            )}
-          </Hero>
+        <Layout>
+          <div className="col">
+            <Card className="balance" aria-label={`${monthName} balance`} aria-busy={totals.isPending}>
+              {totals.isPending ? (
+                <>
+                  <Skeleton $h={44} $w="60%" />
+                  <Skeleton $h={6} />
+                </>
+              ) : totals.isError ? (
+                <LoadError message="Couldn't load this month's totals." onRetry={totals.refetch} />
+              ) : (
+                <Balance totals={totals.data} monthName={monthName} />
+              )}
+              {cumulative.isPending ? (
+                <Skeleton $h={112} />
+              ) : cumulative.isError ? (
+                <LoadError message="Couldn't load the spending chart." onRetry={cumulative.refetch} />
+              ) : (
+                <CumulativeChart {...cumulative.data} monthName={monthName} prevName={prevName} />
+              )}
+            </Card>
 
-          <Card aria-labelledby="trend-title">
-            <div className="head">
-              <h2 id="trend-title">Last 6 months</h2>
-              <Link to="/reports">Reports →</Link>
-            </div>
-            {trend.isPending ? (
-              <Muted>Loading…</Muted>
-            ) : trend.isError ? (
-              <Alert role="alert">Couldn't load the trend.</Alert>
-            ) : trend.data.every((d) => d.income === 0 && d.expense === 0) ? (
-              <Muted>No movements in the last 6 months.</Muted>
-            ) : (
-              <TrendChart data={trend.data} current={month} half={48} />
-            )}
-          </Card>
-
-          <Columns>
-            <Card aria-labelledby="recent-title">
+            <Card className="recent" aria-labelledby="recent-title" aria-busy={recent.isPending}>
               <div className="head">
                 <h2 id="recent-title">Recent</h2>
                 <Link to="/movements">See all →</Link>
               </div>
               {recent.isPending ? (
-                <Muted>Loading…</Muted>
+                [0, 1, 2, 3].map((i) => <Skeleton key={i} $h={36} />)
               ) : recent.isError ? (
-                <Alert role="alert">Couldn't load movements.</Alert>
+                <LoadError message="Couldn't load movements." onRetry={recent.refetch} />
               ) : (
-                <Recent>
-                  {recent.data.map((m) => {
-                    const income = m.categories.type === "income";
-                    return (
-                      <li key={m.id}>
-                        <CategorySwatch $color={m.categories.color}>{m.categories.icon}</CategorySwatch>
-                        <div className="main">
-                          <span className="title">{m.description || m.categories.name}</span>
-                          <span className="meta">
-                            {m.categories.name} · {shortDate(m.date)}
-                          </span>
-                        </div>
-                        <Amount $sign={income ? 1 : -1}>
-                          {money(income ? m.amount : -m.amount)}
-                        </Amount>
-                      </li>
-                    );
-                  })}
-                </Recent>
+                <Rows>
+                  <AnimatePresence>
+                    {recent.data.map((m, i) => {
+                      const income = m.categories.type === "income";
+                      return (
+                        <motion.li key={m.id} {...rowMotion(i)}>
+                          <CategorySwatch $color={m.categories.color}>{m.categories.icon}</CategorySwatch>
+                          <div className="main">
+                            <span className="title">{m.description || m.categories.name}</span>
+                            <span className="meta">
+                              {m.categories.name} · {shortDate(m.date)}
+                            </span>
+                          </div>
+                          <Amount $sign={income ? 1 : -1}>{money(income ? m.amount : -m.amount)}</Amount>
+                        </motion.li>
+                      );
+                    })}
+                  </AnimatePresence>
+                </Rows>
               )}
             </Card>
+          </div>
 
-            <Card aria-labelledby="where-title">
+          <div className="col">
+            <Card className="topay" aria-labelledby="topay-title">
+              <div className="head">
+                <h2 id="topay-title">To pay</h2>
+                <Link to="/movements">Movements →</Link>
+              </div>
+              <ToPayList />
+            </Card>
+
+            <Card className="where" aria-labelledby="where-title" aria-busy={breakdown.isPending}>
               <div className="head">
                 <h2 id="where-title">Where it goes</h2>
                 <Link to="/reports">Reports →</Link>
               </div>
               {breakdown.isPending ? (
-                <Muted>Loading…</Muted>
+                [0, 1, 2].map((i) => <Skeleton key={i} $h={36} />)
               ) : breakdown.isError ? (
-                <Alert role="alert">Couldn't load categories.</Alert>
+                <LoadError message="Couldn't load categories." onRetry={breakdown.refetch} />
               ) : breakdown.data.length === 0 ? (
                 <Muted>No expenses in {monthName} yet.</Muted>
               ) : (
-                // Top 3 by amount; % stays the share of the whole month
-                <CategoryBreakdown rows={breakdown.data} limit={3} />
+                // Top 4 by amount; % stays the share of the whole month
+                <CategoryBreakdown rows={breakdown.data} limit={4} />
               )}
             </Card>
-          </Columns>
-        </>
+          </div>
+        </Layout>
       )}
 
       {adding && (
@@ -160,9 +172,11 @@ function Balance({ totals, monthName }) {
   }
 
   return (
-    <>
+    <BalanceBody>
       <p className="lead">
-        <strong className={over ? "figure over" : "figure"}>{unsigned(balance)}</strong>
+        <strong className={over ? "figure over" : "figure"}>
+          <AnimatedNumber value={Math.abs(balance)} format={unsigned} />
+        </strong>
         <span className="caption">
           {over ? `more spent than earned in ${monthName}` : `left from ${monthName}'s income`}
         </span>
@@ -176,7 +190,11 @@ function Balance({ totals, monthName }) {
           aria-valuenow={Math.min(100, Math.round(ratio * 100))}
           $over={over}
         >
-          <div style={{ width: `${Math.min(ratio, 1) * 100}%` }} />
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min(ratio, 1) * 100}%` }}
+            transition={{ duration: 0.6, ease }}
+          />
         </Meter>
       )}
       <p className="meta">
@@ -193,7 +211,7 @@ function Balance({ totals, monthName }) {
           </>
         )}
       </p>
-    </>
+    </BalanceBody>
   );
 }
 
@@ -201,33 +219,48 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
-  max-width: 960px;
+  max-width: 1120px;
 `;
 
-const Header = styled.header`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
+// Two columns on desktop; one column in reading order (balance, to pay, recent, where) below 62em
+const Layout = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
 
-  /* Wide basis: on phones the button wraps below instead of squeezing the greeting */
-  h1 {
-    flex: 1 1 280px;
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+  }
+  @media (max-width: ${v.bpmarge}) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    .col {
+      display: contents;
+    }
+    .balance {
+      order: 1;
+    }
+    .topay {
+      order: 2;
+    }
+    .recent {
+      order: 3;
+    }
+    .where {
+      order: 4;
+    }
   }
 `;
 
-// The focal point: one big figure read as a sentence, everything else demoted to muted meta
-const Hero = styled.section`
+const BalanceBody = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  border-radius: 16px;
-  background: ${({ theme }) => theme.accentSoft};
+  gap: 12px;
 
   .lead {
     display: flex;
@@ -236,18 +269,18 @@ const Hero = styled.section`
     column-gap: 12px;
   }
   .figure {
-    font-size: 44px;
+    font-size: 40px;
     font-weight: 600;
     line-height: 1.1;
     letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
   }
   .figure.over {
     color: ${({ theme }) => theme.expenseText};
   }
-  /* On the tinted surface, secondary text is the foreground at 72% (muted gray drops below 4.5:1) */
   .caption {
-    color: color-mix(in srgb, ${({ theme }) => theme.text} 72%, transparent);
-    font-size: 15px;
+    color: ${({ theme }) => theme.textMuted};
+    font-size: 14px;
     font-weight: 500;
   }
   .meta {
@@ -255,7 +288,7 @@ const Hero = styled.section`
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 4px 16px;
-    color: color-mix(in srgb, ${({ theme }) => theme.text} 72%, transparent);
+    color: ${({ theme }) => theme.textMuted};
     font-size: 13px;
     font-variant-numeric: tabular-nums;
   }
@@ -263,24 +296,22 @@ const Hero = styled.section`
     color: ${({ theme }) => theme.text};
     font-weight: 600;
   }
-
   @media (max-width: ${v.bplisa}) {
-    padding: 20px 16px;
     .figure {
-      font-size: 36px;
+      font-size: 32px;
     }
   }
 `;
 
 // Accent while within income; expense red once over (the summary text says so too)
 const Meter = styled.div`
-  height: 8px;
-  border-radius: 4px;
+  height: 6px;
+  border-radius: 3px;
   background: ${({ theme }) => theme.border};
 
   div {
     height: 100%;
-    border-radius: 4px;
+    border-radius: 3px;
     background: ${({ $over, theme }) => ($over ? theme.expenseText : theme.accent)};
   }
 `;
@@ -291,15 +322,16 @@ const Welcome = styled.section`
   align-items: flex-start;
   gap: 12px;
   padding: 32px 24px;
-  border-radius: 16px;
+  border-radius: 10px;
   background: ${({ theme }) => theme.accentSoft};
 
   h2 {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 600;
     letter-spacing: -0.02em;
     text-wrap: balance;
   }
+  /* On the tinted surface, secondary text is the foreground at 72% (muted fails 4.5:1) */
   p {
     max-width: 52ch;
     color: color-mix(in srgb, ${({ theme }) => theme.text} 72%, transparent);
@@ -314,56 +346,20 @@ const Welcome = styled.section`
   }
 `;
 
-const Columns = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-
-  @media (max-width: ${v.bpmarge}) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Card = styled.section`
+const Rows = styled.ul`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-  padding: 20px;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
-
-  .head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .head a {
-    color: ${({ theme }) => theme.textMuted};
-    font-size: 13px;
-    text-decoration: none;
-  }
-  .head a:hover {
-    color: ${({ theme }) => theme.text};
-  }
-`;
-
-const Recent = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
   list-style: none;
 
   li {
     display: flex;
     align-items: center;
     gap: 12px;
+    padding: 8px 0;
+    overflow: hidden;
+  }
+  li + li {
+    border-top: 1px solid ${({ theme }) => theme.border};
   }
   .main {
     display: flex;
@@ -384,20 +380,7 @@ const Recent = styled.ul`
   }
 `;
 
-const Amount = styled.span`
-  color: ${({ $sign, theme }) => ($sign > 0 ? theme.incomeText : theme.expenseText)};
-  font-size: 14px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-`;
-
 const Muted = styled.p`
   color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
   font-size: 14px;
 `;
