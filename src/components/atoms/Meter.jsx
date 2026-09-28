@@ -11,6 +11,7 @@ export function Meter({ label, ratio, over, delay = 0 }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.min(100, Math.round(ratio * 100))}
+      aria-valuetext={`${Math.round(ratio * 100)}%`} // the real share, even past 100
       $over={over}
     >
       <motion.div
