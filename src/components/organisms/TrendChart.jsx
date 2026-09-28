@@ -204,7 +204,7 @@ const Tip = styled.div`
   padding: 8px 10px;
   border: 1px solid ${({ theme }) => theme.border};
   border-radius: 8px;
-  background: ${({ theme }) => theme.bg};
+  background: ${({ theme }) => theme.surface};
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

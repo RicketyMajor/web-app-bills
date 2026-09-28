@@ -143,7 +143,7 @@ const Card = styled.section`
     border: 1px solid ${({ theme }) => theme.border};
     border-radius: 8px;
     /* Page surface, not the canvas: fields must read as fields on a borders-only card */
-    background: ${({ theme }) => theme.bg};
+    background: ${({ theme }) => theme.surface};
     color: inherit;
     font: inherit;
     font-size: 14px;

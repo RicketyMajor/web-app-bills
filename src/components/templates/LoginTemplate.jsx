@@ -136,7 +136,7 @@ const GoogleButton = styled.button`
   margin-top: 8px;
   border: 1px solid ${({ theme }) => theme.border};
   border-radius: 10px;
-  background: ${({ theme }) => theme.bg};
+  background: ${({ theme }) => theme.surface};
   color: ${({ theme }) => theme.text};
   font: inherit;
   font-size: 15px;

@@ -1,4 +1,5 @@
 import { ThemeProvider } from 'styled-components'
+import { MotionConfig } from 'motion/react'
 import { MyRoutes } from './routers/routes'
 import { Light, Dark } from './styles/themes'
 import { GlobalStyle } from './styles/GlobalStyle'
@@ -9,8 +10,11 @@ function App() {
 
   return (
     <ThemeProvider theme={theme === 'light' ? Light : Dark}>
-      <GlobalStyle />
-      <MyRoutes />
+      {/* OS "reduce motion" → transforms off, fades only */}
+      <MotionConfig reducedMotion="user">
+        <GlobalStyle />
+        <MyRoutes />
+      </MotionConfig>
     </ThemeProvider>
   )
 }

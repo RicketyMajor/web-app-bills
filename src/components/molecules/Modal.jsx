@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { v } from "../../styles/variables";
 
 // Native modal <dialog>. Mount it to open it; Escape / onClose unmounts it.
@@ -19,17 +19,34 @@ export function Modal({ title, onClose, children }) {
   );
 }
 
+const modalIn = keyframes`
+  from { opacity: 0; transform: scale(0.96); }
+`;
+const backdropIn = keyframes`
+  from { opacity: 0; }
+`;
+
 const Dialog = styled.dialog`
   width: min(400px, calc(100% - 32px));
   margin: auto; /* the global reset removes the native centering */
   padding: 24px;
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
-  background: ${({ theme }) => theme.bg};
+  border-radius: 14px;
+  background: ${({ theme }) => theme.surface};
   color: ${({ theme }) => theme.text};
+  /* The only shadow in the system: the modal needs lift over the page */
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
 
   &::backdrop {
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(12, 12, 14, 0.45);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    &[open] {
+      animation: ${modalIn} 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    &[open]::backdrop {
+      animation: ${backdropIn} 200ms ease-out;
+    }
   }
 
   h2 {
@@ -60,10 +77,10 @@ const Dialog = styled.dialog`
   }
   form > label > input,
   form > label > select {
-    height: 40px;
+    height: 36px;
     padding: 0 12px;
     border: 1px solid ${({ theme }) => theme.border};
-    border-radius: 8px;
+    border-radius: 6px;
     background: ${({ theme }) => theme.bgtotal};
     color: inherit;
     font: inherit;
@@ -107,10 +124,10 @@ const Actions = styled.div`
   gap: 8px;
 
   button {
-    height: 40px;
+    height: 36px;
     padding: 0 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     background: none;
     color: ${({ theme }) => theme.textMuted};
     font: inherit;
@@ -134,7 +151,7 @@ const Actions = styled.div`
   .primary,
   .primary:hover {
     background: ${({ theme }) => theme.accent};
-    color: ${({ theme }) => theme.body};
+    color: ${({ theme }) => theme.onAccent};
   }
   /* Dark text: white on the expense red is ~3:1, fails AA at 14px */
   .danger:not(:disabled),
