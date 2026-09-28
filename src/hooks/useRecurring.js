@@ -25,9 +25,22 @@ const invalidate = (queryClient) =>
     ["recurring", "movements", "balance"].map((key) => queryClient.invalidateQueries({ queryKey: [key] }))
   );
 
+// 'YYYY-MM' this tab already synced. Any failed sync clears it, so the next check retries
+// (also when a resume or a new repeating movement triggered the sync).
+let syncedMonth = null;
+
 // Creates every missing instance through the end of this month (spec 15). The unique
 // (recurring_id, date) makes it safe to run twice or in two tabs. true = it wrote something.
 export async function syncRecurring() {
+  try {
+    return await writeInstances();
+  } catch (error) {
+    syncedMonth = null;
+    throw error;
+  }
+}
+
+async function writeInstances() {
   const { data: rules, error } = await supabase
     .from("recurring")
     .select("id, category_id, amount, description, frequency, anchor, generated_through, active")
@@ -53,17 +66,14 @@ export async function syncRecurring() {
 export function useSyncRecurring() {
   const queryClient = useQueryClient();
   useEffect(() => {
-    let synced = null; // 'YYYY-MM' this tab already synced
     const run = () => {
       const month = isoDate(new Date()).slice(0, 7);
-      if (document.hidden || month === synced) return;
-      synced = month;
+      if (document.hidden || month === syncedMonth) return;
+      syncedMonth = month;
       syncRecurring()
         .then((wrote) => wrote && invalidate(queryClient))
-        // Silent: the next open retries; the unique index and generated_through stop duplicates
-        .catch(() => {
-          synced = null;
-        });
+        // Silent: the next check retries; the unique index and generated_through stop duplicates
+        .catch(() => {});
     };
     run();
     document.addEventListener("visibilitychange", run);
@@ -102,7 +112,7 @@ export function useAddRecurring() {
       }
       const { error } = await supabase.from("movements").insert({ ...movement, recurring_id: ruleId.current });
       if (error) throw error;
-      await syncRecurring().catch(() => {}); // the rest of the month; the next open retries
+      await syncRecurring().catch(() => {}); // the rest of the month; useSyncRecurring retries a failure
     },
     onSuccess: () => {
       ruleId.current = null; // the next repeating movement gets its own rule
@@ -111,16 +121,29 @@ export function useAddRecurring() {
   });
 }
 
-// Edit (amount, description, category) or pause/resume. Resuming creates what's due from today on.
+// Edit (amount, description, category) or pause/resume; the caller sets generated_through with
+// pauseThrough/resumeThrough. Pausing drops the rule's upcoming unpaid instances (spec 15,
+// owner decision); resuming creates what's due from today on.
 export function useSaveRecurring() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...fields }) => {
       const { error } = await supabase.from("recurring").update(fields).eq("id", id);
       if (error) throw error;
-      if (fields.active) await syncRecurring().catch(() => {});
+      if (fields.active === false) {
+        const { error: dropError } = await supabase
+          .from("movements")
+          .delete()
+          .eq("recurring_id", id)
+          .eq("paid", false)
+          .gt("date", isoDate(new Date()));
+        if (dropError) throw dropError;
+      }
+      if (fields.active) await syncRecurring().catch(() => {}); // useSyncRecurring retries a failure
     },
-    onSuccess: () => invalidate(queryClient),
+    // An edit only changes the rule; pause/resume change movements and totals too
+    onSuccess: (_, { active }) =>
+      active === undefined ? queryClient.invalidateQueries({ queryKey: ["recurring"] }) : invalidate(queryClient),
   });
 }
 

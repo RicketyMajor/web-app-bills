@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { dueDates, instancesToCreate, nextDue, repeatLabel, resumeThrough } from "./recurring.js";
+import { dueDates, instancesToCreate, nextDue, pauseThrough, repeatLabel, resumeThrough } from "./recurring.js";
 
 const rule = (over = {}) => ({
   id: 1,
@@ -74,6 +74,13 @@ test("repeatLabel names the schedule", () => {
   assert.equal(repeatLabel("monthly", "2026-09-22"), "Every month on the 22nd");
   assert.equal(repeatLabel("monthly", "2026-09-13"), "Every month on the 13th");
   assert.equal(repeatLabel("yearly", "2026-03-05"), "Every year on Mar 5");
+});
+
+test("pauseThrough pulls generated_through back to today so a resume recreates the dropped instances", () => {
+  assert.equal(pauseThrough("2026-10-31", "2026-10-10"), "2026-10-10");
+  assert.equal(pauseThrough("2026-09-30", "2026-10-10"), "2026-09-30");
+  // Pause on the 10th, resume on the 12th: the 20th comes back, the 11th doesn't
+  assert.equal(resumeThrough(pauseThrough("2026-10-31", "2026-10-10"), "2026-10-12"), "2026-10-11");
 });
 
 test("resumeThrough never moves generated_through backwards", () => {

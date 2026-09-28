@@ -11,6 +11,7 @@ import { Modal, ModalActions } from "../molecules/Modal";
 import { PageHeader } from "../molecules/PageHeader";
 import { LoadError } from "../molecules/LoadError";
 import { SegmentedControl } from "../molecules/SegmentedControl";
+import { RecurringList } from "../organisms/RecurringList";
 
 const currencyName = new Intl.DisplayNames("en", { type: "currency" });
 const CONFIRM_WORD = "DELETE";
@@ -81,6 +82,8 @@ export function SettingsTemplate() {
           </div>
         </Section>
       )}
+
+      <RecurringList />
 
       <Appearance />
 

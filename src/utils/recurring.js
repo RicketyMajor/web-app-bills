@@ -73,6 +73,9 @@ export function repeatLabel(frequency, anchor) {
   return `Every year on ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 }
 
+// Pausing drops the upcoming unpaid instances (after today), so the rule is only covered through today
+export const pauseThrough = (generatedThrough, today) => (generatedThrough > today ? today : generatedThrough);
+
 // Resuming skips what fell due while paused, but never regenerates dates already created
 export function resumeThrough(generatedThrough, today) {
   const t = parseDate(today);
