@@ -9,8 +9,8 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 | Movements | Reports |
 |---|---|
 | ![Movements by month](docs/screenshots/movements.png) | ![Reports: 6-month trend and breakdown by category](docs/screenshots/reports.png) |
-| **Settings** | **Sign in** |
-| ![Settings: name, currency, delete account](docs/screenshots/settings.png) | ![Sign-in page with feature carousel](docs/screenshots/login.png) |
+| **Categories** | **Settings** |
+| ![Categories grid with this month's totals](docs/screenshots/categories.png) | ![Settings: name, currency, appearance, delete account](docs/screenshots/settings.png) |
 
 <details>
 <summary>Dark theme</summary>
@@ -19,29 +19,37 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 
 </details>
 
+<details>
+<summary>Sign in</summary>
+
+![Sign-in page with feature carousel](docs/screenshots/login.png)
+
+</details>
+
 <sub>Screenshots use demo data.</sub>
 
 ## Features
 
 - **Google sign-in** via Supabase Auth. Each account only sees its own data (Postgres row-level security).
-- **Home**: what's left of this month's income, a 6-month trend, recent movements and top categories.
-- **Categories** for income and expenses, with emoji and color.
-- **Movements** by month: amount, category, date, description, paid/pending. Monthly income, expense and balance totals.
+- **Home**: what's left of this month's income, this month's spending vs. last month day by day, recent movements, what's still **to pay** (settle it in one click) and top categories.
+- **Categories** for income and expenses, with emoji, color and this month's total.
+- **Movements** by month: amount, category, date, description, paid/pending. Monthly income, expense and net totals.
 - **Reports**: 6-month income vs. expense trend and a ranked breakdown by category, each with an accessible table view.
 - **Settings**: display name, currency (formats every amount), and self-service account deletion.
-- **Light / dark theme**, following the OS preference until you pick one; the choice syncs across devices.
+- **Appearance**: Light, Dark or System (follows the OS live); light/dark choices sync across devices.
+- **Motion** that respects the OS "reduce motion" setting: figures count, charts draw, lists and pages transition.
 - Responsive: sidebar on desktop, bottom bar on mobile.
 
 ## Stack
 
 | Layer | Tech |
 |---|---|
-| UI | React 19, Vite, react-router 7, styled-components 6, react-icons |
+| UI | React 19, Vite, react-router 7, styled-components 6, motion, react-icons, Geist |
 | State | TanStack Query (server data), Zustand (session, theme, selected month) |
 | Backend | Supabase: Auth (Google OAuth) + PostgreSQL with RLS |
 | Hosting | Vercel (static SPA) + Supabase free tier |
 
-Charts and the login carousel are plain CSS — no chart or carousel libraries.
+Charts are plain SVG/CSS and the login carousel uses CSS scroll-snap — no chart or carousel libraries. Animations use `motion`.
 
 ## Run locally
 
@@ -75,6 +83,8 @@ Run the files in `supabase/migrations/` in order in the Supabase SQL Editor. `20
 Every table has a `user_id` and RLS policies limiting access to `auth.uid()`.
 
 `20260927000000_settings.sql` makes `profiles.theme` nullable (null = follow the OS) and adds `delete_account()`, a `security definer` function that deletes the caller's auth user (cascading to their data).
+
+`20260928000000_category_constraints.sql` makes category names unique per user and type regardless of case, and bounds the icon length.
 
 ### Google sign-in
 
