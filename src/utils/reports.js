@@ -47,3 +47,24 @@ export function totalsByCategory(rows) {
     .map(({ cents, ...category }) => ({ ...category, total: cents / 100 }))
     .sort((a, b) => b.total - a.total);
 }
+
+// Budgeted categories with this month's spend (0 when none), most at risk first
+export function budgetRows(categories, breakdown) {
+  const spent = new Map(breakdown.map((r) => [r.id, r.total]));
+  return categories
+    .filter((c) => c.budget)
+    .map((c) => {
+      const budget = Number(c.budget);
+      const s = spent.get(c.id) ?? 0;
+      return { ...c, budget, spent: s, left: (toCents(budget) - toCents(s)) / 100, ratio: s / budget };
+    })
+    .sort((a, b) => b.ratio - a.ratio);
+}
+
+// Home hero: measure against the total budget when set, otherwise against income
+export function heroReference({ income, expense }, budget) {
+  const byBudget = Number(budget) > 0;
+  const base = byBudget ? Number(budget) : income;
+  const left = (toCents(base) - toCents(expense)) / 100;
+  return { byBudget, base, left, over: left < 0, ratio: base > 0 ? expense / base : null };
+}

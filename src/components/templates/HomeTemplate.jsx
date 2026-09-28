@@ -3,14 +3,17 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
-import { ease, rowMotion } from "../../styles/motion";
+import { rowMotion } from "../../styles/motion";
 import { useAuthStore } from "../../store/authStore";
 import { isoDate, monthLabel, monthStart, shiftMonth, shortDate } from "../../utils/movements";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
 import { useMoney, useProfile } from "../../hooks/useProfile";
+import { useCategories } from "../../hooks/useCategories";
+import { budgetRows, heroReference } from "../../utils/reports";
 import { PrimaryButton } from "../atoms/PrimaryButton";
+import { Meter } from "../atoms/Meter";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { Card } from "../atoms/Card";
 import { Skeleton } from "../atoms/Skeleton";
@@ -21,6 +24,7 @@ import { LoadError } from "../molecules/LoadError";
 import { CumulativeChart } from "../organisms/CumulativeChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
 import { ToPayList } from "../organisms/ToPayList";
+import { BudgetList } from "../organisms/BudgetList";
 import { MovementDialog } from "../organisms/MovementDialog";
 
 function greeting(hour) {
@@ -47,6 +51,10 @@ export function HomeTemplate() {
   const cumulative = useCumulativeSpending(month);
   const recent = useRecentMovements(6);
   const breakdown = useCategoryBreakdown(month, "expense");
+  const expenseCategories = useCategories("expense");
+  // ponytail: card appears once both queries land; their errors already surface in Where it goes / dialogs
+  const budgets =
+    expenseCategories.data && breakdown.data ? budgetRows(expenseCategories.data, breakdown.data) : [];
 
   return (
     <Container>
@@ -78,7 +86,7 @@ export function HomeTemplate() {
               ) : totals.isError ? (
                 <LoadError message="Couldn't load this month's totals." onRetry={totals.refetch} />
               ) : (
-                <Balance totals={totals.data} monthName={monthName} />
+                <Balance totals={totals.data} budget={profile?.monthly_budget} monthName={monthName} />
               )}
               {cumulative.isPending ? (
                 <Skeleton $h={112} />
@@ -131,6 +139,16 @@ export function HomeTemplate() {
               <ToPayList />
             </Card>
 
+            {budgets.length > 0 && (
+              <Card className="budgets" aria-labelledby="budgets-title">
+                <div className="head">
+                  <h2 id="budgets-title">Budgets</h2>
+                  <Link to="/categories">Categories →</Link>
+                </div>
+                <BudgetList rows={budgets.slice(0, 5)} />
+              </Card>
+            )}
+
             <Card className="where" aria-labelledby="where-title" aria-busy={breakdown.isPending}>
               <div className="head">
                 <h2 id="where-title">Where it goes</h2>
@@ -158,44 +176,36 @@ export function HomeTemplate() {
   );
 }
 
-// Signature: what's left of this month's income, and how much of it is already spent
-function Balance({ totals, monthName }) {
+// Signature: what's left of this month's budget (or income, without one), and how much is spent
+function Balance({ totals, budget, monthName }) {
   const money = useMoney();
   // money() always signs; totals read better bare
   const unsigned = (n) => money(Math.abs(n)).replace("+", "");
-  const { income, expense, balance } = totals;
-  const ratio = income > 0 ? expense / income : null;
-  const over = balance < 0;
+  const { income, expense } = totals;
+  const { byBudget, base, left, over, ratio } = heroReference(totals, budget);
 
-  if (income === 0 && expense === 0) {
+  if (!byBudget && income === 0 && expense === 0) {
     return <p className="caption">Nothing logged in {monthName} yet.</p>;
   }
+
+  const caption = byBudget
+    ? over
+      ? "over your budget"
+      : `left of your ${unsigned(base)} budget`
+    : over
+      ? `more spent than earned in ${monthName}`
+      : `left from ${monthName}'s income`;
 
   return (
     <BalanceBody>
       <p className="lead">
         <strong className={over ? "figure over" : "figure"}>
-          <AnimatedNumber value={Math.abs(balance)} format={unsigned} />
+          <AnimatedNumber value={Math.abs(left)} format={unsigned} />
         </strong>
-        <span className="caption">
-          {over ? `more spent than earned in ${monthName}` : `left from ${monthName}'s income`}
-        </span>
+        <span className="caption">{caption}</span>
       </p>
       {ratio !== null && (
-        <Meter
-          role="meter"
-          aria-label="Share of income spent"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.min(100, Math.round(ratio * 100))}
-          $over={over}
-        >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(ratio, 1) * 100}%` }}
-            transition={{ duration: 0.6, ease }}
-          />
-        </Meter>
+        <Meter label={byBudget ? "Share of budget spent" : "Share of income spent"} ratio={ratio} over={over} />
       )}
       <p className="meta">
         {ratio === null ? (
@@ -204,9 +214,11 @@ function Balance({ totals, monthName }) {
           </span>
         ) : (
           <>
-            <span>{Math.round(ratio * 100)}% spent</span>
             <span>
-              <b>{unsigned(expense)}</b> of <b>{unsigned(income)}</b> income
+              {Math.round(ratio * 100)}% {byBudget ? "of budget" : "spent"}
+            </span>
+            <span>
+              <b>{unsigned(expense)}</b> of <b>{unsigned(base)}</b> {byBudget ? "budget" : "income"}
             </span>
           </>
         )}
@@ -222,7 +234,7 @@ const Container = styled.div`
   max-width: 1120px;
 `;
 
-// Two columns on desktop; one column in reading order (balance, to pay, recent, where) below 62em
+// Two columns on desktop; one column in reading order (balance, to pay, budgets, recent, where) below 62em
 const Layout = styled.div`
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
@@ -248,11 +260,14 @@ const Layout = styled.div`
     .topay {
       order: 2;
     }
-    .recent {
+    .budgets {
       order: 3;
     }
-    .where {
+    .recent {
       order: 4;
+    }
+    .where {
+      order: 5;
     }
   }
 `;
@@ -300,19 +315,6 @@ const BalanceBody = styled.div`
     .figure {
       font-size: 32px;
     }
-  }
-`;
-
-// Accent while within income; expense red once over (the summary text says so too)
-const Meter = styled.div`
-  height: 6px;
-  border-radius: 3px;
-  background: ${({ theme }) => theme.border};
-
-  div {
-    height: 100%;
-    border-radius: 3px;
-    background: ${({ $over, theme }) => ($over ? theme.expenseText : theme.accent)};
   }
 `;
 
