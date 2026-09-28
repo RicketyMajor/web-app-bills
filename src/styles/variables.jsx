@@ -2,7 +2,6 @@ import { RiDeleteBin2Line, RiEditLine } from "react-icons/ri";
 import { IoIosArrowDown } from "react-icons/io";
 import { CgMathPlus } from "react-icons/cg";
 import { BsGoogle } from "react-icons/bs";
-import logo from "../assets/logocerdo.png";
 
 export const v = {
   smSpacing: `8px`,
@@ -22,7 +21,6 @@ export const v = {
   bpmarge: `62em`,
   bphomer: `75em`,
 
-  logo: logo,
   iconeditarTabla: RiEditLine,
   iconeliminarTabla: RiDeleteBin2Line,
   iconoFlechabajo: IoIosArrowDown,

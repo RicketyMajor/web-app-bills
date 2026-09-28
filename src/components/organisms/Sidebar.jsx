@@ -18,6 +18,7 @@ import { useThemeStore } from "../../store/themeStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { monthStart } from "../../utils/movements";
 import { useMoney, useProfile, useUpdateProfile } from "../../hooks/useProfile";
+import { Logo } from "../atoms/Logo";
 
 const links = [
   { to: "/", label: "Home", icon: RiHome5Line },
@@ -59,7 +60,7 @@ export function Sidebar() {
   return (
     <Aside $collapsed={collapsed}>
       <Brand>
-        <img src={v.logo} alt="" />
+        <Logo size={28} />
         <span className="label">Bills</span>
       </Brand>
 
@@ -201,10 +202,6 @@ const Brand = styled.div`
   font-weight: 700;
   letter-spacing: -0.01em;
 
-  img {
-    width: 32px;
-    height: 32px;
-  }
   @media (max-width: ${v.bpbart}) {
     display: none;
   }

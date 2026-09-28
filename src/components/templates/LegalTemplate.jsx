@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { v } from "../../styles/variables";
+import { Logo } from "../atoms/Logo";
 
 export const CONTACT_URL = "https://github.com/RicketyMajor/web-app-bills/issues";
 
@@ -9,7 +9,7 @@ export function LegalTemplate({ title, updated, children }) {
   return (
     <Container>
       <Link to="/" className="brand">
-        <img src={v.logo} alt="" />
+        <Logo size={28} />
         <span>Bills</span>
       </Link>
       <h1>{title}</h1>
@@ -37,7 +37,6 @@ const Container = styled.main`
     color: inherit;
     font-weight: 600;
     text-decoration: none;
-    img { width: 32px; height: 32px; }
   }
   h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; }
   h2 { margin: 32px 0 8px; font-size: 18px; font-weight: 600; }

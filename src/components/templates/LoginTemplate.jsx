@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { useAuthStore } from "../../store/authStore";
 import { FeatureCarousel } from "../organisms/FeatureCarousel";
+import { Logo } from "../atoms/Logo";
 
 export function LoginTemplate() {
   const signInWithGoogle = useAuthStore((s) => s.signInWithGoogle);
@@ -29,7 +30,7 @@ export function LoginTemplate() {
 
       <SignIn>
         <Brand>
-          <img src={v.logo} alt="" />
+          <Logo size={40} animated />
           <span>Bills</span>
         </Brand>
         <h1>Your money, in plain sight</h1>
@@ -120,11 +121,6 @@ const Brand = styled.div`
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
-
-  img {
-    width: 40px;
-    height: 40px;
-  }
 `;
 
 const GoogleButton = styled.button`
