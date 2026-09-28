@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { budgetRows, cumulativeByDay, heroReference, lastMonths, monthlyTotals, totalsByCategory } from "./reports.js";
+import { budgetRows, compareLabel, cumulativeByDay, heroReference, lastMonths, monthlyTotals, totalsByCategory } from "./reports.js";
 
 test("lastMonths ends at the given month, oldest first", () => {
   assert.deepEqual(lastMonths("2026-02-01", 3), ["2025-12-01", "2026-01-01", "2026-02-01"]);
@@ -19,18 +19,45 @@ test("monthlyTotals buckets by month and fills gaps with 0", () => {
   ]);
 });
 
-test("totalsByCategory groups and ranks", () => {
-  const food = { id: 1, name: "Food", icon: "🍔", color: "#FE6156", type: "expense" };
-  const bus = { id: 2, name: "Transport", icon: "🚌", color: "#F9743B", type: "expense" };
+const food = { id: 1, name: "Food", icon: "🍔", color: "#FE6156", type: "expense" };
+const bus = { id: 2, name: "Transport", icon: "🚌", color: "#F9743B", type: "expense" };
+const gym = { id: 3, name: "Gym", icon: "🏋️", color: "#10B981", type: "expense" };
+
+test("totalsByCategory groups, ranks and compares with last month", () => {
   const rows = [
-    { amount: "3.00", categories: bus },
-    { amount: "2.50", categories: food },
-    { amount: "2.50", categories: food },
+    { amount: "3.00", date: "2026-02-10", categories: bus },
+    { amount: "2.50", date: "2026-02-01", categories: food },
+    { amount: "2.50", date: "2026-02-28", categories: food },
+    { amount: "4.00", date: "2026-01-05", categories: food },
+    { amount: "9.00", date: "2026-01-20", categories: gym }, // only last month: no row
   ];
-  assert.deepEqual(totalsByCategory(rows), [
-    { ...food, total: 5 },
-    { ...bus, total: 3 },
+  assert.deepEqual(totalsByCategory(rows, "2026-02-01"), [
+    { ...food, total: 5, delta: 0.25 },
+    { ...bus, total: 3, delta: "new" },
   ]);
+});
+
+test("totalsByCategory compares the same stretch in the current month", () => {
+  const rows = [
+    { amount: "10.00", date: "2026-09-02", categories: food },
+    { amount: "10.00", date: "2026-08-03", categories: food },
+    { amount: "30.00", date: "2026-08-20", categories: food }, // after Aug 5: ignored
+  ];
+  assert.equal(totalsByCategory(rows, "2026-09-01", "2026-09-05")[0].delta, 0);
+});
+
+test("totalsByCategory on the 31st takes the whole shorter month", () => {
+  const rows = [
+    { amount: "20.00", date: "2026-10-31", categories: food },
+    { amount: "10.00", date: "2026-09-30", categories: food },
+  ];
+  assert.equal(totalsByCategory(rows, "2026-10-01", "2026-10-31")[0].delta, 1);
+});
+
+test("compareLabel names the stretch it compares against", () => {
+  assert.equal(compareLabel("2026-09-01", "2026-09-28"), "Aug 1–28");
+  assert.equal(compareLabel("2026-10-01", "2026-10-31"), "Sep 1–30");
+  assert.equal(compareLabel("2026-04-01", "2026-09-28"), "Mar");
 });
 
 test("cumulativeByDay accumulates per day, carries empty days, splits months", () => {

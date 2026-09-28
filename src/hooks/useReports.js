@@ -20,18 +20,19 @@ export function useMonthlyTrend(month, n = 6) {
   });
 }
 
+// One query covering last month too, for the deltas.
 export function useCategoryBreakdown(month, type) {
   return useQuery({
     queryKey: ["movements", "breakdown", month, type],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("movements")
-        .select("amount, categories!inner(id, name, icon, color, type)")
+        .select("amount, date, categories!inner(id, name, icon, color, type)")
         .eq("categories.type", type)
-        .gte("date", month)
+        .gte("date", shiftMonth(month, -1))
         .lt("date", shiftMonth(month, 1));
       if (error) throw error;
-      return totalsByCategory(data);
+      return totalsByCategory(data, month, isoDate(new Date()));
     },
   });
 }

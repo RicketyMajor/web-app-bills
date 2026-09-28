@@ -36,16 +36,35 @@ export function cumulativeByDay(rows, month, today) {
   return { current: series(month).slice(0, cut), previous: series(shiftMonth(month, -1)), days };
 }
 
-export function totalsByCategory(rows) {
+// This month's total per category, ranked, with the change vs last month.
+// When `today` is inside `month`, last month only counts up to the same day (same stretch).
+export function totalsByCategory(rows, month, today) {
+  const current = month.slice(0, 7);
+  const previous = shiftMonth(month, -1).slice(0, 7);
+  const cutDay = today?.startsWith(current) ? today.slice(8, 10) : "31";
   const byId = new Map();
-  for (const { amount, categories } of rows) {
-    const entry = byId.get(categories.id) ?? { ...categories, cents: 0 };
-    entry.cents += toCents(amount);
+  for (const { amount, date, categories } of rows) {
+    const entry = byId.get(categories.id) ?? { ...categories, cents: 0, prevCents: 0 };
+    if (date.startsWith(current)) entry.cents += toCents(amount);
+    else if (date.startsWith(previous) && date.slice(8, 10) <= cutDay) entry.prevCents += toCents(amount);
     byId.set(categories.id, entry);
   }
   return [...byId.values()]
-    .map(({ cents, ...category }) => ({ ...category, total: cents / 100 }))
+    .filter((e) => e.cents > 0)
+    .map(({ cents, prevCents, ...category }) => ({
+      ...category,
+      total: cents / 100,
+      delta: prevCents ? (cents - prevCents) / prevCents : "new",
+    }))
     .sort((a, b) => b.total - a.total);
+}
+
+// What the deltas compare against: "Aug 1–28" mid-month, "Aug" for a closed month
+export function compareLabel(month, today) {
+  const previous = shiftMonth(month, -1);
+  const name = new Date(`${previous}T00:00`).toLocaleDateString("en-US", { month: "short" });
+  if (!today?.startsWith(month.slice(0, 7))) return name;
+  return `${name} 1–${Math.min(Number(today.slice(8, 10)), daysIn(previous))}`;
 }
 
 // Budgeted categories with this month's spend (0 when none), most at risk first

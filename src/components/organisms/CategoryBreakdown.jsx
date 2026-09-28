@@ -4,9 +4,33 @@ import { ease } from "../../styles/motion";
 import { useMoney } from "../../hooks/useProfile";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 
+// "↑18%" / "↓12%" / "New"; neutral on purpose (up is bad for spending, good for income)
+function Delta({ delta, compare }) {
+  if (delta === undefined || !compare) return null;
+  if (delta === "new")
+    return (
+      <small title={`None in ${compare}`}>
+        <span aria-hidden="true">New</span>
+        <span className="sr">new, none in {compare}</span>
+      </small>
+    );
+  const pct = Math.round(Math.abs(delta) * 100);
+  if (pct === 0) return null;
+  const text = `${pct}% ${delta > 0 ? "more" : "less"} than ${compare}`;
+  return (
+    <small title={text}>
+      <span aria-hidden="true">
+        {delta > 0 ? "↑" : "↓"}
+        {pct}%
+      </span>
+      <span className="sr">{text}</span>
+    </small>
+  );
+}
+
 // Ranked list; bar width is relative to the top category, % is share of the month.
 // Every value is printed, so the list is its own table view.
-export function CategoryBreakdown({ rows, limit }) {
+export function CategoryBreakdown({ rows, limit, compare }) {
   const money = useMoney();
   const sum = rows.reduce((s, r) => s + r.total, 0);
   const top = rows[0]?.total || 1;
@@ -18,7 +42,10 @@ export function CategoryBreakdown({ rows, limit }) {
           <CategorySwatch $color={r.color}>{r.icon}</CategorySwatch>
           <div className="body">
             <div className="line">
-              <span className="name">{r.name}</span>
+              <span className="label">
+                <span className="name">{r.name}</span>
+                <Delta delta={r.delta} compare={compare} />
+              </span>
               <span className="value">
                 {money(r.total).replace("+", "")}
                 <small>{Math.round((r.total / sum) * 100)}%</small>
@@ -67,6 +94,22 @@ const List = styled.ul`
     overflow: hidden;
     font-weight: 500;
     text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .label {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+  }
+  .label small {
+    flex-shrink: 0;
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
   }
   .value {

@@ -11,7 +11,7 @@ import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
 import { useMoney, useProfile } from "../../hooks/useProfile";
 import { useCategories } from "../../hooks/useCategories";
-import { budgetRows, heroReference } from "../../utils/reports";
+import { budgetRows, compareLabel, heroReference } from "../../utils/reports";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { Meter } from "../atoms/Meter";
 import { CategorySwatch } from "../atoms/CategorySwatch";
@@ -162,7 +162,7 @@ export function HomeTemplate() {
                 <Muted>No expenses in {monthName} yet.</Muted>
               ) : (
                 // Top 4 by amount; % stays the share of the whole month
-                <CategoryBreakdown rows={breakdown.data} limit={4} />
+                <CategoryBreakdown rows={breakdown.data} limit={4} compare={compareLabel(month, isoDate(now))} />
               )}
             </Card>
           </div>

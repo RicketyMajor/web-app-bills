@@ -2,7 +2,8 @@ import { useState } from "react";
 import styled from "styled-components";
 import { useMonthStore } from "../../store/monthStore";
 import { useCategoryBreakdown, useMonthlyTrend } from "../../hooks/useReports";
-import { monthLabel } from "../../utils/movements";
+import { isoDate, monthLabel } from "../../utils/movements";
+import { compareLabel } from "../../utils/reports";
 import { Card } from "../atoms/Card";
 import { Skeleton } from "../atoms/Skeleton";
 import { PageHeader } from "../molecules/PageHeader";
@@ -53,7 +54,7 @@ export function ReportsTemplate() {
           ) : breakdown.data.length === 0 ? (
             <Muted>No {type === "income" ? "income" : "expenses"} this month.</Muted>
           ) : (
-            <CategoryBreakdown rows={breakdown.data} />
+            <CategoryBreakdown rows={breakdown.data} compare={compareLabel(month, isoDate(new Date()))} />
           )}
         </Card>
       </MonthSlide>
