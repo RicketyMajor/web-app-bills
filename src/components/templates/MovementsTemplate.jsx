@@ -14,6 +14,7 @@ import { Card } from "../atoms/Card";
 import { Skeleton } from "../atoms/Skeleton";
 import { Amount } from "../atoms/Amount";
 import { AnimatedNumber } from "../atoms/AnimatedNumber";
+import { Badge } from "../atoms/Badge";
 import { PageHeader } from "../molecules/PageHeader";
 import { LoadError } from "../molecules/LoadError";
 import { MonthSelector } from "../molecules/MonthSelector";
@@ -317,15 +318,6 @@ const Table = styled(Card)`
       opacity: 1;
     }
   }
-`;
-
-const Badge = styled.span`
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: ${({ theme }) => theme.accentSoft};
-  color: ${({ theme }) => theme.accent};
-  font-size: 11px;
-  font-weight: 600;
 `;
 
 const IconButton = styled.button`

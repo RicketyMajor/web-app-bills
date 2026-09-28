@@ -19,6 +19,17 @@ export const monthLabel = (start) =>
 export const shortDate = (date) =>
   parse(date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
+// When a pending movement is due, relative to today. Neutral words: works for bills and expected income.
+export function dueLabel(date, today) {
+  // round: a DST day is 23 or 25 hours long
+  const days = Math.round((parse(date) - parse(today)) / 86400000);
+  if (days < 0) return { text: `${-days} day${days === -1 ? "" : "s"} late`, late: true };
+  if (days === 0) return { text: "Today", late: false };
+  if (days === 1) return { text: "Tomorrow", late: false };
+  if (days < 14) return { text: `In ${days} days`, late: false };
+  return { text: shortDate(date), late: false };
+}
+
 // ponytail: sums client-side; move to a SQL view/RPC if monthly rows grow large
 export function sumTotals(rows) {
   const cents = { income: 0, expense: 0 };

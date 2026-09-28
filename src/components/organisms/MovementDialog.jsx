@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { useCategories } from "../../hooks/useCategories";
@@ -6,6 +7,8 @@ import { useSaveMovement } from "../../hooks/useMovements";
 // Create (no movement.id) or edit a movement of movement.type. Mount it to open it.
 export function MovementDialog({ movement, onClose }) {
   const save = useSaveMovement();
+  // Unpaid: the date is when it's due
+  const [paid, setPaid] = useState(movement.paid ?? true);
   const { data: categories, isPending, isError } = useCategories(movement.type);
 
   const handleSubmit = (e) => {
@@ -82,7 +85,7 @@ export function MovementDialog({ movement, onClose }) {
         </label>
 
         <label>
-          <span>Date</span>
+          <span>{paid ? "Date" : "Due date"}</span>
           <input name="date" type="date" required defaultValue={movement.date} />
         </label>
 
@@ -92,7 +95,7 @@ export function MovementDialog({ movement, onClose }) {
         </label>
 
         <label className="check">
-          <input name="paid" type="checkbox" defaultChecked={movement.paid ?? true} />
+          <input name="paid" type="checkbox" checked={paid} onChange={(e) => setPaid(e.target.checked)} />
           <span>Paid</span>
         </label>
 

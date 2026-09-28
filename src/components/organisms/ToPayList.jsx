@@ -3,19 +3,21 @@ import { AnimatePresence, motion } from "motion/react";
 import { RiCheckLine } from "react-icons/ri";
 import { v } from "../../styles/variables";
 import { rowMotion, ease } from "../../styles/motion";
-import { shortDate } from "../../utils/movements";
+import { dueLabel, isoDate } from "../../utils/movements";
 import { useMoney } from "../../hooks/useProfile";
 import { usePendingMovements, useSaveMovement } from "../../hooks/useMovements";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { Amount } from "../atoms/Amount";
 import { Skeleton } from "../atoms/Skeleton";
+import { Badge } from "../atoms/Badge";
 import { LoadError } from "../molecules/LoadError";
 
-// Unpaid movements, oldest first. One click settles one; the row leaves when the list refetches.
+// Unpaid movements, oldest first (late ones on top). One click settles one; the row leaves when the list refetches.
 export function ToPayList() {
   const money = useMoney();
   const pending = usePendingMovements();
   const save = useSaveMovement();
+  const today = isoDate(new Date());
 
   if (pending.isPending)
     return (
@@ -36,13 +38,14 @@ export function ToPayList() {
             const income = m.categories.type === "income";
             const title = m.description || m.categories.name;
             const settling = save.isPending && save.variables?.id === m.id;
+            const due = dueLabel(m.date, today);
             return (
               <motion.li key={m.id} {...rowMotion(i)}>
                 <CategorySwatch $color={m.categories.color}>{m.categories.icon}</CategorySwatch>
                 <div className="main">
                   <span className="title">{title}</span>
                   <span className="meta">
-                    {m.categories.name} · {shortDate(m.date)}
+                    {m.categories.name} · {due.late ? <Badge>{due.text}</Badge> : due.text}
                   </span>
                 </div>
                 <Amount $sign={income ? 1 : -1}>{money(income ? m.amount : -m.amount)}</Amount>
