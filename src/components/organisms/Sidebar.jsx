@@ -224,7 +224,8 @@ const Balance = styled.div`
   border-bottom: 1px solid ${({ theme }) => theme.border};
   font-size: 13px;
 
-  span {
+  /* Direct child only: AnimatedNumber renders a span inside strong */
+  > span {
     color: ${({ theme }) => theme.textMuted};
   }
   strong {
