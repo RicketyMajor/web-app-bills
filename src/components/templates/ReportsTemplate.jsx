@@ -5,7 +5,7 @@ import { useMonthStore } from "../../store/monthStore";
 import { useCategoryBreakdown, useMonthlyTrend } from "../../hooks/useReports";
 import { monthLabel } from "../../utils/movements";
 import { MonthSelector } from "../molecules/MonthSelector";
-import { TypeTabs } from "../molecules/TypeTabs";
+import { SegmentedControl } from "../molecules/SegmentedControl";
 import { TrendChart } from "../organisms/TrendChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
 
@@ -40,7 +40,7 @@ export function ReportsTemplate() {
       <Card aria-labelledby="breakdown-title" $dim={breakdown.isFetching && !breakdown.isPending}>
         <div className="head">
           <h2 id="breakdown-title">By category · {monthLabel(month)}</h2>
-          <TypeTabs value={type} onChange={setType} />
+          <SegmentedControl value={type} onChange={setType} />
         </div>
         {breakdown.isPending ? (
           <Muted>Loading…</Muted>

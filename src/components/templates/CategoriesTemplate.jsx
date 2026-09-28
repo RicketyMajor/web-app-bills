@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { CategoryDialog } from "../organisms/CategoryDialog";
-import { TypeTabs } from "../molecules/TypeTabs";
+import { SegmentedControl } from "../molecules/SegmentedControl";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import {
   categoryErrorMessage,
@@ -31,7 +31,7 @@ export function CategoriesTemplate() {
         </PrimaryButton>
       </Header>
 
-      <TypeTabs
+      <SegmentedControl
         value={type}
         onChange={(t) => {
           setType(t);

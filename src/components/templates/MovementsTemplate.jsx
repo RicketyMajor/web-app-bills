@@ -8,7 +8,7 @@ import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useDeleteMovement, useMovements } from "../../hooks/useMovements";
 import { useMoney } from "../../hooks/useProfile";
 import { MonthSelector } from "../molecules/MonthSelector";
-import { TypeTabs } from "../molecules/TypeTabs";
+import { SegmentedControl } from "../molecules/SegmentedControl";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { MovementDialog } from "../organisms/MovementDialog";
 
@@ -61,7 +61,7 @@ export function MovementsTemplate() {
         </Stat>
       </Stats>
 
-      <TypeTabs
+      <SegmentedControl
         value={type}
         onChange={(t) => {
           setType(t);
