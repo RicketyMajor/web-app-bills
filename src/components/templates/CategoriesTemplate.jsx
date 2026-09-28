@@ -1,21 +1,30 @@
 import { useState } from "react";
 import styled from "styled-components";
+import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
+import { tileMotion } from "../../styles/motion";
+import { monthStart } from "../../utils/movements";
+import { categoryErrorMessage, useCategories, useDeleteCategory } from "../../hooks/useCategories";
+import { useCategoryBreakdown } from "../../hooks/useReports";
+import { useMoney } from "../../hooks/useProfile";
 import { PrimaryButton } from "../atoms/PrimaryButton";
-import { CategoryDialog } from "../organisms/CategoryDialog";
-import { SegmentedControl } from "../molecules/SegmentedControl";
 import { CategorySwatch } from "../atoms/CategorySwatch";
-import {
-  categoryErrorMessage,
-  useCategories,
-  useDeleteCategory,
-} from "../../hooks/useCategories";
+import { Skeleton } from "../atoms/Skeleton";
+import { PageHeader } from "../molecules/PageHeader";
+import { LoadError } from "../molecules/LoadError";
+import { SegmentedControl } from "../molecules/SegmentedControl";
+import { CategoryDialog } from "../organisms/CategoryDialog";
+
+const currentMonth = monthStart(new Date());
 
 export function CategoriesTemplate() {
+  const money = useMoney();
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
-  const { data: categories, isPending, isError } = useCategories(type);
+  const categories = useCategories(type);
+  const totals = useCategoryBreakdown(currentMonth, type);
   const remove = useDeleteCategory();
+  const totalById = new Map(totals.data?.map((r) => [r.id, r.total]));
 
   const handleDelete = (category) => {
     if (confirm(`Delete "${category.name}"?`)) remove.mutate(category.id);
@@ -23,13 +32,12 @@ export function CategoriesTemplate() {
 
   return (
     <Container>
-      <Header>
-        <h1>Categories</h1>
+      <PageHeader title="Categories">
         <PrimaryButton type="button" onClick={() => setEditing({ type })}>
           <v.agregar aria-hidden="true" />
           New category
         </PrimaryButton>
-      </Header>
+      </PageHeader>
 
       <SegmentedControl
         value={type}
@@ -41,33 +49,48 @@ export function CategoriesTemplate() {
 
       {remove.isError && <Alert role="alert">{categoryErrorMessage(remove.error)}</Alert>}
 
-      {isPending ? (
-        <Muted>Loading…</Muted>
-      ) : isError ? (
-        <Alert role="alert">Couldn't load categories.</Alert>
-      ) : categories.length === 0 ? (
+      {categories.isPending ? (
+        <Grid aria-busy="true">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} $h={72} />
+          ))}
+        </Grid>
+      ) : categories.isError ? (
+        <LoadError message="Couldn't load categories." onRetry={categories.refetch} />
+      ) : categories.data.length === 0 ? (
         <Muted>No {type} categories yet.</Muted>
       ) : (
-        <List>
-          {categories.map((c) => (
-            <li key={c.id}>
-              <CategorySwatch $color={c.color}>{c.icon}</CategorySwatch>
-              <span className="name">{c.name}</span>
-              <IconButton type="button" onClick={() => setEditing(c)} aria-label={`Edit ${c.name}`}>
-                <v.iconeditarTabla aria-hidden="true" />
-              </IconButton>
-              <IconButton
-                type="button"
-                className="danger"
-                onClick={() => handleDelete(c)}
-                disabled={remove.isPending}
-                aria-label={`Delete ${c.name}`}
-              >
-                <v.iconeliminarTabla aria-hidden="true" />
-              </IconButton>
-            </li>
-          ))}
-        </List>
+        <Grid as="ul">
+          <AnimatePresence>
+            {categories.data.map((c, i) => (
+              <motion.li key={c.id} {...tileMotion(i)}>
+                <CategorySwatch $color={c.color}>{c.icon}</CategorySwatch>
+                <div className="body">
+                  <span className="name">{c.name}</span>
+                  <span className="total">
+                    {totalById.has(c.id)
+                      ? `${money(totalById.get(c.id)).replace("+", "")} this month`
+                      : "Nothing this month"}
+                  </span>
+                </div>
+                <div className="actions">
+                  <IconButton type="button" onClick={() => setEditing(c)} aria-label={`Edit ${c.name}`}>
+                    <v.iconeditarTabla aria-hidden="true" />
+                  </IconButton>
+                  <IconButton
+                    type="button"
+                    className="danger"
+                    onClick={() => handleDelete(c)}
+                    disabled={remove.isPending}
+                    aria-label={`Delete ${c.name}`}
+                  >
+                    <v.iconeliminarTabla aria-hidden="true" />
+                  </IconButton>
+                </div>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </Grid>
       )}
 
       {editing && <CategoryDialog category={editing} onClose={() => setEditing(null)} />}
@@ -78,56 +101,72 @@ export function CategoriesTemplate() {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  max-width: 640px;
+  gap: 20px;
+  max-width: 960px;
 `;
 
-const Header = styled.header`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-
-  h1 {
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-`;
-
-const List = styled.ul`
-  display: flex;
-  flex-direction: column;
+const Grid = styled.div`
+  display: grid;
+  /* 260px min: room for the total on one line next to the (hidden) actions */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
   list-style: none;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
 
   li {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 14px;
+    border: 1px solid ${({ theme }) => theme.border};
+    border-radius: 10px;
+    background: ${({ theme }) => theme.surface};
   }
-  li + li {
-    border-top: 1px solid ${({ theme }) => theme.border};
+  .body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
   }
   .name {
-    flex: 1;
+    overflow: hidden;
     font-size: 14px;
     font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .total {
+    color: ${({ theme }) => theme.textMuted};
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Hover/focus reveals the tile actions; always visible without a pointer */
+  .actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 150ms;
+  }
+  li:hover .actions,
+  li:focus-within .actions {
+    opacity: 1;
+  }
+  @media (hover: none) {
+    .actions {
+      opacity: 1;
+    }
   }
 `;
 
 const IconButton = styled.button`
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: none;
   color: ${({ theme }) => theme.textMuted};
-  font-size: 18px;
+  font-size: 17px;
   cursor: pointer;
   transition: background-color 150ms, color 150ms;
 

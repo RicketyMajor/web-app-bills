@@ -1,4 +1,6 @@
 import styled from "styled-components";
+import { motion } from "motion/react";
+import { ease } from "../../styles/motion";
 import { useMoney } from "../../hooks/useProfile";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 
@@ -11,7 +13,7 @@ export function CategoryBreakdown({ rows, limit }) {
 
   return (
     <List>
-      {rows.slice(0, limit).map((r) => (
+      {rows.slice(0, limit).map((r, i) => (
         <li key={r.id}>
           <CategorySwatch $color={r.color}>{r.icon}</CategorySwatch>
           <div className="body">
@@ -23,7 +25,12 @@ export function CategoryBreakdown({ rows, limit }) {
               </span>
             </div>
             <div className="track">
-              <div style={{ width: `${(r.total / top) * 100}%`, background: r.color }} />
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(r.total / top) * 100}%` }}
+                transition={{ duration: 0.6, ease, delay: i * 0.04 }}
+                style={{ background: r.color }}
+              />
             </div>
           </div>
         </li>

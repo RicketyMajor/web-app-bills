@@ -1,4 +1,6 @@
 import styled, { useTheme } from "styled-components";
+import { motion } from "motion/react";
+import { ease } from "../../styles/motion";
 import { useMoney } from "../../hooks/useProfile";
 import { monthLabel } from "../../utils/movements";
 
@@ -24,7 +26,7 @@ export function TrendChart({ data, current, half = 96 }) {
       </Legend>
 
       <Columns $half={half}>
-        {data.map((d) => (
+        {data.map((d, i) => (
           <li
             key={d.month}
             tabIndex={0}
@@ -32,10 +34,20 @@ export function TrendChart({ data, current, half = 96 }) {
             aria-label={`${monthLabel(d.month)}: income ${money(d.income)}, expenses ${money(-d.expense)}, net ${money(d.income - d.expense)}`}
           >
             <div className="half up">
-              <Bar $color={theme.incomeText} style={{ height: pct(d.income) }} />
+              <Bar
+                $color={theme.incomeText}
+                initial={{ height: 0 }}
+                animate={{ height: pct(d.income) }}
+                transition={{ duration: 0.5, ease, delay: i * 0.05 }}
+              />
             </div>
             <div className="half down">
-              <Bar $color={theme.expenseText} style={{ height: pct(d.expense) }} />
+              <Bar
+                $color={theme.expenseText}
+                initial={{ height: 0 }}
+                animate={{ height: pct(d.expense) }}
+                transition={{ duration: 0.5, ease, delay: i * 0.05 }}
+              />
             </div>
             <span className="label" aria-hidden="true">
               {shortMonth(d.month)}
@@ -142,7 +154,7 @@ const Columns = styled.ul`
     display: grid;
     grid-template-rows: ${({ $half }) => `${$half}px ${$half}px auto`};
     justify-items: center;
-    border-radius: 8px;
+    border-radius: 6px;
     outline-offset: -2px;
     cursor: default;
   }
@@ -188,7 +200,7 @@ const Columns = styled.ul`
   }
 `;
 
-const Bar = styled.div`
+const Bar = styled(motion.div)`
   width: min(24px, 40%);
   background: ${({ $color }) => $color};
 `;
