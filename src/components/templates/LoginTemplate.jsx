@@ -69,7 +69,7 @@ const Showcase = styled.div`
   display: grid;
   place-items: center;
   padding: 48px 32px;
-  border-radius: 16px;
+  border-radius: 14px;
   background: ${({ theme }) => theme.accentSoft};
 
   @media (max-width: ${v.bpmarge}) {
@@ -96,7 +96,7 @@ const SignIn = styled.section`
     font-size: 32px;
     font-weight: 600;
     line-height: 1.15;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
   }
   p {
     color: ${({ theme }) => theme.textMuted};
@@ -119,7 +119,7 @@ const Brand = styled.div`
   gap: 12px;
   margin-bottom: 16px;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: -0.01em;
 `;
 
@@ -128,10 +128,10 @@ const GoogleButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 12px;
-  height: 48px;
+  height: 44px;
   margin-top: 8px;
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 10px;
+  border-radius: 8px;
   background: ${({ theme }) => theme.surface};
   color: ${({ theme }) => theme.text};
   font: inherit;

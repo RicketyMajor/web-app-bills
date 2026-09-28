@@ -32,7 +32,7 @@ const Container = styled.main`
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 32px;
     color: inherit;
     font-weight: 600;

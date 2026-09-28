@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
 import { AppLayout } from '../components/templates/AppLayout';
 import { ProtectedRoute, PublicOnlyRoute } from './ProtectedRoute';
+import { Splash } from '../components/molecules/Splash';
 
 // Route-level code splitting: each page ships in its own chunk.
 const Login = lazy(() => import('../pages/Login').then((m) => ({ default: m.Login })));
@@ -16,7 +17,7 @@ const Terms = lazy(() => import('../pages/Terms').then((m) => ({ default: m.Term
 export function MyRoutes() {
     return (
         <BrowserRouter>
-            <Suspense fallback={null}>
+            <Suspense fallback={<Splash />}>
                 <Routes>
                     <Route element={<PublicOnlyRoute />}>
                         <Route path="/login" element={<Login />} />

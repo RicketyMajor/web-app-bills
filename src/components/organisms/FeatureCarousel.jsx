@@ -163,8 +163,8 @@ const Slide = styled.div`
     margin-bottom: 24px;
     padding: 20px;
     border: 1px solid ${({ theme }) => theme.border};
-    border-radius: 12px;
-    background: ${({ theme }) => theme.bgtotal};
+    border-radius: 10px;
+    background: ${({ theme }) => theme.surface};
   }
   h2 {
     font-size: 20px;
