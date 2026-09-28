@@ -42,6 +42,12 @@ export function RecurringList() {
   return (
     <Section aria-labelledby="recurring-title">
       <h2 id="recurring-title">Recurring</h2>
+      {/* Pausing deletes movements, so it's said on screen, not only in the switch's tooltip */}
+      {rules.data?.length > 0 && (
+        <Muted className="lead">
+          Added as pending movements when they're due. Pausing one removes its upcoming unpaid movements.
+        </Muted>
+      )}
       {rules.isPending ? (
         <div className="stack" aria-busy="true">
           {[0, 1].map((i) => (
@@ -73,7 +79,7 @@ export function RecurringList() {
                     <Switch
                       aria-checked={r.active}
                       aria-label={`Repeat ${title}`}
-                      title={r.active ? "Pause (removes its upcoming unpaid movements)" : "Resume"}
+                      title={r.active ? "Pause" : "Resume"}
                       onClick={() => toggle(r)}
                       disabled={save.isPending}
                     />
@@ -106,6 +112,11 @@ export function RecurringList() {
 const Section = styled(Card)`
   container-type: inline-size;
 
+  /* Tucks under the title (the card's 16px gap would read as a new section) */
+  .lead {
+    margin-top: -10px;
+    font-size: 13px;
+  }
   .stack {
     display: flex;
     flex-direction: column;
