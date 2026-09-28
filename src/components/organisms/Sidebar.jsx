@@ -19,6 +19,9 @@ import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { monthStart } from "../../utils/movements";
 import { useMoney, useProfile, useUpdateProfile } from "../../hooks/useProfile";
 import { Logo } from "../atoms/Logo";
+import { AnimatedNumber } from "../atoms/AnimatedNumber";
+import { motion } from "motion/react";
+import { spring } from "../../styles/motion";
 
 const links = [
   { to: "/", label: "Home", icon: RiHome5Line },
@@ -65,15 +68,20 @@ export function Sidebar() {
       </Brand>
 
       <Balance $collapsed={collapsed} $sign={Math.sign(balance ?? 0)}>
-        <span>{monthName} balance</span>
-        <strong>{balance === undefined ? "—" : money(balance)}</strong>
+        <span>{monthName}</span>
+        <strong>{balance === undefined ? "—" : <AnimatedNumber value={balance} format={money} />}</strong>
       </Balance>
 
       <Nav>
         {links.map(({ to, label, icon: Icon }) => (
           <Item key={to} to={to} end={to === "/"} title={collapsed ? label : undefined}>
-            <Icon aria-hidden="true" />
-            <span className="label">{label}</span>
+            {({ isActive }) => (
+              <>
+                {isActive && <motion.span layoutId="nav-pill" className="pill" transition={spring} />}
+                <Icon aria-hidden="true" />
+                <span className="label">{label}</span>
+              </>
+            )}
           </Item>
         ))}
       </Nav>
@@ -127,10 +135,10 @@ const rowStyles = css`
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 40px;
-  padding: 0 12px;
+  height: 36px;
+  padding: 0 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: none;
   color: ${({ theme }) => theme.textMuted};
   font-size: 14px;
@@ -157,8 +165,8 @@ const Aside = styled.aside`
   top: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: ${({ $collapsed }) => ($collapsed ? "72px" : "240px")};
+  gap: 12px;
+  width: ${({ $collapsed }) => ($collapsed ? "68px" : "232px")};
   height: 100vh;
   padding: 16px 12px;
   border-right: 1px solid ${({ theme }) => theme.border};
@@ -196,10 +204,10 @@ const Aside = styled.aside`
 const Brand = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 0 8px;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   letter-spacing: -0.01em;
 
   @media (max-width: ${v.bpbart}) {
@@ -209,22 +217,18 @@ const Brand = styled.div`
 
 const Balance = styled.div`
   display: ${({ $collapsed }) => ($collapsed ? "none" : "flex")};
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 12px 16px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px 12px;
   border-bottom: 1px solid ${({ theme }) => theme.border};
+  font-size: 13px;
 
   span {
     color: ${({ theme }) => theme.textMuted};
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
   strong {
-    font-size: 22px;
     font-weight: 600;
-    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
     color: ${({ $sign, theme }) =>
       $sign > 0 ? theme.incomeText : $sign < 0 ? theme.expenseText : theme.text};
@@ -248,9 +252,18 @@ const Nav = styled.nav`
 
 const Item = styled(NavLink)`
   ${rowStyles}
+  position: relative;
+  isolation: isolate;
 
-  &.active {
+  /* Active background slides between items (motion layoutId) */
+  .pill {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 6px;
     background: ${({ theme }) => theme.accentSoft};
+  }
+  &.active {
     color: ${({ theme }) => theme.accent};
     font-weight: 600;
   }

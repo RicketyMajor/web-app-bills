@@ -1,17 +1,27 @@
 import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { motion } from "motion/react";
 import { Sidebar } from "../organisms/Sidebar";
 import { v } from "../../styles/variables";
+import { ease } from "../../styles/motion";
 
 export function AppLayout() {
+  const { pathname } = useLocation();
   return (
     <Container>
       <Sidebar />
       <Main>
         {/* Pages are lazy-loaded; suspend here so the sidebar stays put */}
         <Suspense fallback={null}>
-          <Outlet />
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, ease }}
+          >
+            <Outlet />
+          </motion.div>
         </Suspense>
       </Main>
     </Container>
@@ -31,7 +41,7 @@ const Container = styled.div`
 
 const Main = styled.main`
   min-width: 0;
-  padding: 32px;
+  padding: 32px 40px;
 
   @media (max-width: ${v.bpbart}) {
     padding: 24px 16px;

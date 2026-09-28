@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
 import { shiftMonth, sumTotals } from "../utils/movements";
 
@@ -15,5 +15,7 @@ export function useMonthTotals(month) {
       if (error) throw error;
       return sumTotals(data);
     },
+    // While the next month loads, keep showing this one so figures count old → new
+    placeholderData: keepPreviousData,
   });
 }
