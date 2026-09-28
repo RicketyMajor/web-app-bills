@@ -45,9 +45,9 @@ export function Sidebar() {
   const profile = useProfile().data;
   const updateProfile = useUpdateProfile();
 
-  // Another device chose a theme: adopt it. null = never chosen, keep the local one.
+  // Another device chose light/dark: adopt it. null = system or never chosen, keep the local mode.
   useEffect(() => {
-    if (profile?.theme) useThemeStore.setState({ theme: profile.theme });
+    if (profile?.theme) useThemeStore.getState().setMode(profile.theme);
   }, [profile?.theme]);
 
   // localStorage flips instantly (no flash); the profile follows in the background

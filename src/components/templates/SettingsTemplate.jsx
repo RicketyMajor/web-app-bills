@@ -3,14 +3,20 @@ import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { CURRENCY_LOCALES } from "../../utils/formatMoney";
 import { useDeleteAccount, useProfile, useUpdateProfile } from "../../hooks/useProfile";
+import { useThemeStore } from "../../store/themeStore";
 import { PrimaryButton } from "../atoms/PrimaryButton";
+import { Card } from "../atoms/Card";
+import { Skeleton } from "../atoms/Skeleton";
 import { Modal, ModalActions } from "../molecules/Modal";
+import { PageHeader } from "../molecules/PageHeader";
+import { LoadError } from "../molecules/LoadError";
+import { SegmentedControl } from "../molecules/SegmentedControl";
 
 const currencyName = new Intl.DisplayNames("en", { type: "currency" });
 const CONFIRM_WORD = "DELETE";
 
 export function SettingsTemplate() {
-  const { data: profile, isPending, isError } = useProfile();
+  const { data: profile, isPending, isError, refetch } = useProfile();
   const update = useUpdateProfile();
   const [deleting, setDeleting] = useState(false);
 
@@ -25,14 +31,18 @@ export function SettingsTemplate() {
 
   return (
     <Container>
-      <h1>Settings</h1>
+      <PageHeader title="Settings" />
 
       {isPending ? (
-        <Muted>Loading…</Muted>
+        <Section aria-busy="true">
+          <Skeleton $h={20} $w="30%" />
+          <Skeleton $h={40} />
+          <Skeleton $h={40} />
+        </Section>
       ) : isError ? (
-        <Alert role="alert">Couldn't load your settings.</Alert>
+        <LoadError message="Couldn't load your settings." onRetry={refetch} />
       ) : (
-        <Card as="form" onSubmit={handleSubmit} onChange={() => !update.isPending && update.reset()}>
+        <Section as="form" onSubmit={handleSubmit} onChange={() => !update.isPending && update.reset()}>
           <h2>Profile</h2>
           <label>
             <span>Name</span>
@@ -55,19 +65,47 @@ export function SettingsTemplate() {
             {update.isSuccess && <Muted role="status">Saved</Muted>}
             {update.isError && <Alert role="alert">Couldn't save. Please try again.</Alert>}
           </div>
-        </Card>
+        </Section>
       )}
 
-      <Card className="danger">
+      <Appearance />
+
+      <Section className="danger">
         <h2>Delete account</h2>
         <p>Removes your account, categories and movements for good. This can't be undone.</p>
         <DangerButton type="button" onClick={() => setDeleting(true)}>
           Delete account…
         </DangerButton>
-      </Card>
+      </Section>
 
       {deleting && <DeleteAccountDialog onClose={() => setDeleting(false)} />}
     </Container>
+  );
+}
+
+const MODES = [
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+  { value: "system", label: "System" },
+];
+
+// Applies instantly; the profile keeps light/dark for other devices (null = system)
+function Appearance() {
+  const mode = useThemeStore((s) => s.mode);
+  const setMode = useThemeStore((s) => s.setMode);
+  const update = useUpdateProfile();
+
+  const handleChange = (next) => {
+    setMode(next);
+    update.mutate({ theme: next === "system" ? null : next });
+  };
+
+  return (
+    <Section aria-labelledby="appearance-title">
+      <h2 id="appearance-title">Appearance</h2>
+      <SegmentedControl value={mode} onChange={handleChange} options={MODES} label="Theme" />
+      {update.isError && <Alert role="alert">Couldn't save your theme. It still applies on this device.</Alert>}
+    </Section>
   );
 }
 
@@ -106,24 +144,11 @@ function DeleteAccountDialog({ onClose }) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   max-width: 640px;
-
-  h1 {
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
 `;
 
-const Card = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 20px;
-  border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 12px;
-
+const Section = styled(Card)`
   label {
     display: flex;
     flex-direction: column;
@@ -138,12 +163,12 @@ const Card = styled.section`
   }
   input,
   select {
-    height: 40px;
+    height: 36px;
     padding: 0 12px;
     border: 1px solid ${({ theme }) => theme.border};
-    border-radius: 8px;
-    /* Page surface, not the canvas: fields must read as fields on a borders-only card */
-    background: ${({ theme }) => theme.surface};
+    border-radius: 6px;
+    /* Fields on a surface card use the canvas so they read as fields */
+    background: ${({ theme }) => theme.bgtotal};
     color: inherit;
     font: inherit;
     font-size: 14px;
@@ -152,10 +177,6 @@ const Card = styled.section`
     display: flex;
     align-items: center;
     gap: 12px;
-  }
-  h2 {
-    font-size: 16px;
-    font-weight: 600;
   }
   p {
     font-size: 14px;
@@ -168,10 +189,10 @@ const Card = styled.section`
 // Outlined, not filled: PrimaryButton stays the one accent action on the page.
 const DangerButton = styled.button`
   --danger: ${({ theme }) => theme.expenseText};
-  height: 40px;
-  padding: 0 16px;
+  height: 36px;
+  padding: 0 14px;
   border: 1px solid var(--danger);
-  border-radius: 8px;
+  border-radius: 6px;
   background: none;
   color: var(--danger);
   font: inherit;
