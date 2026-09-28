@@ -54,19 +54,21 @@ export function LoginTemplate() {
 
 const Container = styled.main`
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  /* minmax(0, …): the carousel's intrinsic width must not widen the column (phone overflow) */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-height: 100vh;
   padding: 16px;
   gap: 16px;
 
   @media (max-width: ${v.bpmarge}) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "signin" "showcase";
   }
 `;
 
 const Showcase = styled.div`
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   place-items: center;
   padding: 48px 32px;
   border-radius: 14px;
