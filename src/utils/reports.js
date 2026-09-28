@@ -1,7 +1,5 @@
 // The .js extension keeps this importable by `node --test`
-import { shiftMonth } from "./movements.js";
-
-const toCents = (amount) => Math.round(Number(amount) * 100);
+import { shiftMonth, toCents } from "./movements.js";
 
 export const lastMonths = (month, n) =>
   Array.from({ length: n }, (_, i) => shiftMonth(month, i - n + 1));

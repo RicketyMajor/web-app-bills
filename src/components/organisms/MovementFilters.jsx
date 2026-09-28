@@ -3,9 +3,10 @@ import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { useCategories } from "../../hooks/useCategories";
 import { activeFilterCount } from "../../utils/movements";
+import { ToolButton } from "../atoms/ToolButton";
 
 // Search stays visible; the other filters fold into a panel below the bar.
-// values are URL params as strings ("" = off); children go at the end of the bar.
+// values are strings ("" = off; the page mirrors them to the URL); children go at the end of the bar.
 export function MovementFilters({ type, values, onChange, onClear, children }) {
   const count = activeFilterCount(values);
   const [open, setOpen] = useState(count > 0);
@@ -23,16 +24,10 @@ export function MovementFilters({ type, values, onChange, onClear, children }) {
           value={values.q}
           onChange={(e) => onChange("q", e.target.value)}
         />
-        <button
-          type="button"
-          className="tool"
-          aria-expanded={open}
-          aria-controls={panelId}
-          onClick={() => setOpen(!open)}
-        >
+        <ToolButton aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)}>
           Filters{count > 0 && ` (${count})`}
-          <v.iconoFlechabajo aria-hidden="true" className="chevron" />
-        </button>
+          <v.iconoFlechabajo aria-hidden="true" />
+        </ToolButton>
         {children}
       </div>
 
@@ -100,7 +95,9 @@ export function MovementFilters({ type, values, onChange, onClear, children }) {
   );
 }
 
+// Container queries: the room next to the sidebar decides the layout, not the viewport
 const Wrap = styled.div`
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -125,42 +122,10 @@ const Wrap = styled.div`
   .search {
     flex: 1 1 240px;
   }
-  .tool {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 36px;
-    padding: 0 12px;
-    border: 1px solid ${({ theme }) => theme.border};
-    border-radius: 6px;
-    background: ${({ theme }) => theme.surface};
-    color: ${({ theme }) => theme.text};
-    font: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 150ms;
-
-    &:hover:not(:disabled) {
-      background: ${({ theme }) => theme.border};
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-  }
-  .chevron {
-    color: ${({ theme }) => theme.textMuted};
-    transition: transform 150ms;
-  }
-  [aria-expanded="true"] .chevron {
-    transform: rotate(180deg);
-  }
-
   .panel {
     display: grid;
-    /* At most 4 columns (one per field); the full-width foot would otherwise keep an empty 5th track */
-    grid-template-columns: repeat(auto-fit, minmax(max(160px, calc((100% - 36px) / 4)), 1fr));
+    /* Two pairs (category/status, min/max) on narrow widths, one row of four when it fits */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
     padding: 16px;
     border: 1px solid ${({ theme }) => theme.border};
@@ -210,7 +175,6 @@ const Wrap = styled.div`
     width: 16px;
     height: 16px;
     padding: 0;
-    accent-color: ${({ theme }) => theme.accent};
   }
   .clear {
     height: 36px;
@@ -231,8 +195,13 @@ const Wrap = styled.div`
       cursor: default;
     }
   }
-  /* Phones: search on its own line, Filters (+ Export) below */
-  @media (max-width: ${v.bpbart}) {
+  @container (min-width: 640px) {
+    .panel {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  /* Narrow: search on its own line, Filters (+ Export) below */
+  @container (max-width: 480px) {
     .search {
       flex-basis: 100%;
     }

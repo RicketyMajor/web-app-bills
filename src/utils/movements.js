@@ -16,12 +16,15 @@ export const shiftMonth = (start, n) => {
 export const monthLabel = (start) =>
   parse(start).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-// "Sep 24"; other years add it: "Mar 5, 2020"
-export const shortDate = (date) => {
-  const d = parse(date);
-  const year = d.getFullYear() === new Date().getFullYear() ? undefined : "numeric";
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year });
-};
+export const toCents = (amount) => Math.round(Number(amount) * 100);
+
+// "Sep 24"; outside today's year it adds it: "Mar 5, 2020"
+export const shortDate = (date, today = isoDate(new Date())) =>
+  parse(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: date.slice(0, 4) === today.slice(0, 4) ? undefined : "numeric",
+  });
 
 // When a pending movement is due, relative to today. Neutral words: works for bills and expected income.
 export function dueLabel(date, today) {
@@ -31,13 +34,13 @@ export function dueLabel(date, today) {
   if (days === 0) return { text: "Today", late: false };
   if (days === 1) return { text: "Tomorrow", late: false };
   if (days < 14) return { text: `In ${days} days`, late: false };
-  return { text: shortDate(date), late: false };
+  return { text: shortDate(date, today), late: false };
 }
 
 // ponytail: sums client-side; move to a SQL view/RPC if monthly rows grow large
 export function sumTotals(rows) {
   const cents = { income: 0, expense: 0 };
-  for (const r of rows) cents[r.categories.type] += Math.round(Number(r.amount) * 100);
+  for (const r of rows) cents[r.categories.type] += toCents(r.amount);
   return {
     income: cents.income / 100,
     expense: cents.expense / 100,
@@ -47,21 +50,24 @@ export function sumTotals(rows) {
 
 // Lowercase without accents: "Café" matches "cafe"
 const fold = (s) => s.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
-const cents = (amount) => Math.round(Number(amount) * 100);
+// An amount bound in cents, or null when empty or not a number (hand-edited URL)
+const bound = (s) => (s !== "" && Number.isFinite(Number(s)) ? toCents(s) : null);
 
 // Movements filters (URL params as strings; "" = off). All of them must match.
 export function filterMovements(rows, { q = "", cat = "", status = "", min = "", max = "" }) {
   const needle = fold(q.trim());
+  const lo = bound(min);
+  const hi = bound(max);
   return rows.filter(
     (m) =>
       (!needle || fold(`${m.description ?? ""} ${m.categories.name}`).includes(needle)) &&
       (!cat || m.category_id === Number(cat)) &&
       (!status || m.paid === (status === "paid")) &&
-      (min === "" || cents(m.amount) >= cents(min)) &&
-      (max === "" || cents(m.amount) <= cents(max))
+      (lo === null || toCents(m.amount) >= lo) &&
+      (hi === null || toCents(m.amount) <= hi)
   );
 }
 
 // "Filters (N)": the search box is always visible, so it isn't counted; min–max is one filter
 export const activeFilterCount = ({ cat, status, min, max, all }) =>
-  [cat, status, min || max, all === "1"].filter(Boolean).length;
+  [cat, status, bound(min) !== null || bound(max) !== null, all === "1"].filter(Boolean).length;

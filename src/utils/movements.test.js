@@ -38,6 +38,7 @@ test("shortDate adds the year only outside the current year", () => {
   const year = new Date().getFullYear();
   assert.equal(shortDate(`${year}-03-05`), "Mar 5");
   assert.equal(shortDate("2020-03-05"), "Mar 5, 2020");
+  assert.equal(shortDate("2026-10-12", "2027-01-02"), "Oct 12, 2026");
 });
 
 const mv = (id, amount, description, name, paid = true, category_id = id) => ({
@@ -63,10 +64,12 @@ test("filterMovements combines category, status and an inclusive amount range", 
   assert.deepEqual(ids(filterMovements(sample, { ...none, status: "paid" })), [1, 3]);
   assert.deepEqual(ids(filterMovements(sample, { ...none, min: "10", max: "12.5" })), [1, 3]);
   assert.deepEqual(ids(filterMovements(sample, { ...none, status: "paid", min: "11" })), [1]);
+  assert.deepEqual(ids(filterMovements(sample, { ...none, min: "abc" })), [1, 2, 3]);
 });
 
 test("activeFilterCount counts the range once and ignores the search text", () => {
   assert.equal(activeFilterCount({ cat: "", status: "", min: "", max: "", all: "" }), 0);
   assert.equal(activeFilterCount({ cat: "4", status: "paid", min: "5", max: "9", all: "1" }), 4);
   assert.equal(activeFilterCount({ cat: "", status: "", min: "", max: "20", all: "" }), 1);
+  assert.equal(activeFilterCount({ cat: "", status: "", min: "abc", max: "", all: "" }), 0);
 });

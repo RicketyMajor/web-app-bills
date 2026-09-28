@@ -24,35 +24,35 @@ import { MonthSlide } from "../molecules/MonthSlide";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { MovementDialog } from "../organisms/MovementDialog";
 import { MovementFilters } from "../organisms/MovementFilters";
+import { ToolButton } from "../atoms/ToolButton";
 
-const FILTER_KEYS = ["q", "cat", "status", "min", "max", "all"];
+const VIEW_KEYS = ["type", "q", "cat", "status", "min", "max", "all"];
+const NO_FILTERS = { q: "", cat: "", status: "", min: "", max: "", all: "" };
 
 export function MovementsTemplate() {
   const money = useMoney();
   const month = useMonthStore((s) => s.month);
-  const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
   const { data: totals, isPlaceholderData: staleTotals } = useMonthTotals(month);
-  // Filters live in the URL: reload and Back keep them
-  const [params, setParams] = useSearchParams();
-  const filters = Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) ?? ""]));
-  const all = filters.all === "1";
-  const filtering = filters.q.trim() !== "" || activeFilterCount(filters) > 0;
-  const movements = useMovements(month, type, all);
-  const rows = movements.data && filterMovements(movements.data, filters);
 
-  // replace: typing shouldn't stack history entries
-  const setFilter = (key, value) =>
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (value) next.set(key, value);
-        else next.delete(key);
-        return next;
-      },
-      { replace: true }
-    );
-  const clearFilters = () => setParams({}, { replace: true });
+  // Type + filters render from local state, so inputs update with every keystroke
+  // (router updates run in a transition and made the caret jump). The URL mirrors
+  // them (replace: no history entries) so reload and shared links restore the view.
+  const [params, setParams] = useSearchParams();
+  const [view, setView] = useState(() => Object.fromEntries(VIEW_KEYS.map((k) => [k, params.get(k) ?? ""])));
+  const update = (changes) => {
+    const next = { ...view, ...changes };
+    setView(next);
+    setParams(Object.fromEntries(Object.entries(next).filter(([, value]) => value)), { replace: true });
+  };
+  const setFilter = (key, value) => update({ [key]: value });
+  const clearFilters = () => update(NO_FILTERS);
+
+  const type = view.type === "income" ? "income" : "expense";
+  const all = view.all === "1";
+  const filtering = view.q.trim() !== "" || activeFilterCount(view) > 0;
+  const movements = useMovements(month, type, all);
+  const rows = movements.data && filterMovements(movements.data, view);
   const remove = useDeleteMovement();
 
   // New movements default to today when viewing the current month
@@ -79,42 +79,40 @@ export function MovementsTemplate() {
         </PrimaryButton>
       </PageHeader>
 
-      {filtering ? (
-        <Summary aria-live="polite">
-          {rows
-            ? `${rows.length} result${rows.length === 1 ? "" : "s"} · ${money(sumTotals(rows)[type]).replace("+", "")}`
-            : movements.isPending && "Searching…"}
-        </Summary>
-      ) : (
-        /* Outside MonthSlide: the figures count from the previous month's values.
-           Dimmed while they still show the previous month (placeholder data). */
-        <Kpis $stale={staleTotals} aria-busy={staleTotals}>
-          <Kpi label="Income" value={totals?.income} sign={1} />
-          <Kpi label="Expenses" value={totals && -totals.expense} sign={-1} />
-          <Kpi label="Net" value={totals?.balance} sign={Math.sign(totals?.balance ?? 0)} />
-        </Kpis>
-      )}
+      {/* Outside MonthSlide: the figures count from the previous month's values.
+          Dimmed while they still show the previous month (placeholder data) and in
+          All months, where the list no longer follows the selected month. */}
+      <Kpis $stale={staleTotals || all} aria-busy={staleTotals}>
+        <Kpi label="Income" value={totals?.income} sign={1} />
+        <Kpi label="Expenses" value={totals && -totals.expense} sign={-1} />
+        <Kpi label="Net" value={totals?.balance} sign={Math.sign(totals?.balance ?? 0)} />
+      </Kpis>
 
       <SegmentedControl
         value={type}
         onChange={(t) => {
-          setType(t);
-          setFilter("cat", "");
+          // A category belongs to one type; "" = expense, the default
+          update({ type: t === "income" ? t : "", cat: "" });
           remove.reset();
         }}
       />
 
-      <MovementFilters type={type} values={filters} onChange={setFilter} onClear={clearFilters}>
-        <button
-          type="button"
-          className="tool"
+      <MovementFilters type={type} values={view} onChange={setFilter} onClear={clearFilters}>
+        <ToolButton
           disabled={!rows?.length}
           onClick={() => downloadCsv(`movements-${all ? "all" : month.slice(0, 7)}-${type}.csv`, toCsv(rows))}
         >
           <v.iconoDescargar aria-hidden="true" />
           Export CSV
-        </button>
+        </ToolButton>
       </MovementFilters>
+
+      {/* Next to the rows it counts; the empty state speaks for 0 results */}
+      {filtering && rows?.length > 0 && (
+        <Summary aria-live="polite">
+          {rows.length} result{rows.length === 1 ? "" : "s"} · {money(sign * sumTotals(rows)[type])}
+        </Summary>
+      )}
 
       {remove.isError && <Alert role="alert">Couldn't delete the movement. Please try again.</Alert>}
 
@@ -129,7 +127,7 @@ export function MovementsTemplate() {
           <LoadError message="Couldn't load movements." onRetry={movements.refetch} />
         ) : rows.length === 0 ? (
           filtering ? (
-            <Empty>
+            <Empty role="status">
               <p>No movements match these filters.</p>
               <button type="button" onClick={clearFilters}>
                 Clear filters
@@ -269,8 +267,10 @@ const KpiCard = styled(Card)`
 `;
 
 // Table-like rows on desktop (swatch · description · date · status · amount · actions);
-// compact rows below 48em with date and status folded into the meta line.
+// compact rows when the card is narrow (phones, or tablets beside the sidebar)
+// with date and status folded into the meta line.
 const Table = styled(Card)`
+  container-type: inline-size;
   gap: 0;
   padding: 0;
   overflow: hidden;
@@ -354,7 +354,7 @@ const Table = styled(Card)`
     }
   }
 
-  @media (max-width: ${v.bpbart}) {
+  @container (max-width: 600px) {
     .thead {
       display: none;
     }
