@@ -8,7 +8,7 @@ export const ToolButton = styled.button.attrs({ type: "button" })`
   gap: 6px;
   height: 36px;
   padding: 0 12px;
-  border: 1px solid ${({ theme }) => theme.border};
+  border: 1px solid ${({ theme }) => theme.fieldBorder};
   border-radius: 6px;
   background: ${({ theme }) => theme.surface};
   color: ${({ theme }) => theme.text};

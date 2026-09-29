@@ -184,7 +184,7 @@ const Section = styled(Card)`
   select {
     height: 36px;
     padding: 0 12px;
-    border: 1px solid ${({ theme }) => theme.border};
+    border: 1px solid ${({ theme }) => theme.fieldBorder};
     border-radius: 6px;
     /* Fields on a surface card use the canvas so they read as fields */
     background: ${({ theme }) => theme.bgtotal};

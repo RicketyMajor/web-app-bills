@@ -4,6 +4,7 @@ export const Light = {
   bgtotal: "#FAFAF9", // canvas
   surface: "#FFFFFF", // cards, modals, tooltips
   border: "#E7E5E4",
+  fieldBorder: "#8A8A93", // inputs and toolbar controls: 3:1+ on surface and canvas (WCAG 1.4.11)
   text: "#18181B",
   textMuted: "#71717A",
   accent: "#5B21B6",
@@ -17,6 +18,7 @@ export const Dark = {
   bgtotal: "#0C0C0E",
   surface: "#16161A",
   border: "#26262B",
+  fieldBorder: "#63636C",
   text: "#F4F4F5",
   textMuted: "#A1A1AA",
   accent: "#A78BFA",

@@ -254,7 +254,7 @@ const NewCategories = styled.fieldset`
     height: 36px;
     min-width: 180px;
     padding: 0 12px;
-    border: 1px solid ${({ theme }) => theme.border};
+    border: 1px solid ${({ theme }) => theme.fieldBorder};
     border-radius: 6px;
     background: ${({ theme }) => theme.bgtotal};
     color: inherit;
@@ -275,7 +275,7 @@ const FileInput = styled.input.attrs({ type: "file" })`
     height: 28px;
     margin-right: 10px;
     padding: 0 12px;
-    border: 1px solid ${({ theme }) => theme.border};
+    border: 1px solid ${({ theme }) => theme.fieldBorder};
     border-radius: 4px;
     background: ${({ theme }) => theme.surface};
     color: ${({ theme }) => theme.text};

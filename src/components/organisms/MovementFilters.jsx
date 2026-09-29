@@ -112,7 +112,7 @@ const Wrap = styled.div`
     height: 36px;
     min-width: 0;
     padding: 0 12px;
-    border: 1px solid ${({ theme }) => theme.border};
+    border: 1px solid ${({ theme }) => theme.fieldBorder};
     border-radius: 6px;
     background: ${({ theme }) => theme.surface};
     color: inherit;

@@ -27,7 +27,7 @@ export function EmojiPicker({ value, onChange }) {
 
 // <details> accordion with a radio grid: keyboard arrows move the selection natively
 const Picker = styled.details`
-  border: 1px solid ${({ theme }) => theme.border};
+  border: 1px solid ${({ theme }) => theme.fieldBorder};
   border-radius: 8px;
   background: ${({ theme }) => theme.bgtotal};
 

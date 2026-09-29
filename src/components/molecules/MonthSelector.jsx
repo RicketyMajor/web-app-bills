@@ -37,7 +37,7 @@ const Container = styled.div`
   align-items: center;
   gap: 2px;
   padding: 3px;
-  border: 1px solid ${({ theme }) => theme.border};
+  border: 1px solid ${({ theme }) => theme.fieldBorder};
   border-radius: 8px;
   background: ${({ theme }) => theme.surface};
   opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};

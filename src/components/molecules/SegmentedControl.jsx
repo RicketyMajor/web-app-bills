@@ -28,7 +28,7 @@ const Group = styled.div`
   gap: 2px;
   width: fit-content;
   padding: 3px;
-  border: 1px solid ${({ theme }) => theme.border};
+  border: 1px solid ${({ theme }) => theme.fieldBorder};
   border-radius: 8px;
   background: ${({ theme }) => theme.surface};
 
