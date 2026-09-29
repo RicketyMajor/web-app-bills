@@ -2,7 +2,7 @@
 
 A personal expense tracker: sign in with Google, organize your categories, log income and expenses, and see where your money goes each month.
 
-**Live:** https://web-app-bills.vercel.app · **Version:** 1.0.0 — see the [changelog](CHANGELOG.md)
+**Live:** https://web-app-bills.vercel.app · **Version:** 1.0.1 — see the [changelog](CHANGELOG.md)
 
 ![Home dashboard](docs/screenshots/home.png)
 

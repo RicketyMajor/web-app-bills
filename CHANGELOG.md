@@ -2,6 +2,16 @@
 
 All notable changes to Bills are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.0.1] — 2026-09-29
+
+### Fixed
+- Dates catch up when you come back to a tab left open overnight or past the end of the month: the sidebar balance, Home, category totals, due labels, goals and the date of a new movement.
+- Moving a repeating movement onto a date that already has one from the same repeat now says so, instead of showing a generic error.
+
+### Accessibility
+- Form fields are named by their label only; hints are read as descriptions and stay readable.
+- The CSV import announces "Reading…" and a short result once per file, instead of on every checkbox.
+
 ## [1.0.0] — 2026-09-29
 
 The first complete release of Bills, a personal expense tracker that runs in the browser and installs like an app. Live at https://web-app-bills.vercel.app.
