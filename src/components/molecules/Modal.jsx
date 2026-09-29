@@ -3,7 +3,7 @@ import styled, { keyframes } from "styled-components";
 import { v } from "../../styles/variables";
 
 // Native modal <dialog>. Mount it to open it; Escape / onClose unmounts it.
-export function Modal({ title, onClose, children }) {
+export function Modal({ title, onClose, wide, children }) {
   const ref = useRef(null);
   const titleId = useId();
 
@@ -12,7 +12,7 @@ export function Modal({ title, onClose, children }) {
   }, []);
 
   return (
-    <Dialog ref={ref} onClose={onClose} aria-labelledby={titleId}>
+    <Dialog ref={ref} onClose={onClose} aria-labelledby={titleId} $wide={wide}>
       <h2 id={titleId}>{title}</h2>
       {children}
     </Dialog>
@@ -27,7 +27,7 @@ const backdropIn = keyframes`
 `;
 
 const Dialog = styled.dialog`
-  width: min(400px, calc(100% - 32px));
+  width: min(${({ $wide }) => ($wide ? "720px" : "400px")}, calc(100% - 32px));
   margin: auto; /* the global reset removes the native centering */
   padding: 24px;
   border: 1px solid ${({ theme }) => theme.border};

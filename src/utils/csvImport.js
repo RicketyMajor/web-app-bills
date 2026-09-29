@@ -3,7 +3,7 @@ const COLUMNS = ["date", "description", "category", "type", "amount", "paid"];
 export const MAX_ROWS = 2000;
 export const MAX_BYTES = 1024 * 1024;
 
-// RFC 4180: quoted fields, "" escapes, commas and line breaks inside quotes. Drops blank lines.
+// RFC 4180: quoted fields, "" escapes, commas and line breaks inside quotes. Blank lines stay (as [""]) so row numbers match the file.
 export function parseCsv(text) {
   const s = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
   const rows = [];
@@ -31,11 +31,11 @@ export function parseCsv(text) {
     } else cell += c;
   }
   if (cell !== "" || row.length) rows.push([...row, cell]);
-  return rows.filter((r) => r.some((c) => c.trim() !== ""));
+  return rows;
 }
 
-// The export prefixes formula-like cells with ' (CSV injection guard); undo it
-const unguard = (s) => (/^'[=+\-@\t\r]/.test(s) ? s.slice(1) : s);
+// The export prefixes cells starting with a formula character or ' with ' (CSV injection guard); undo it
+const unguard = (s) => (/^'[=+\-@\t\r']/.test(s) ? s.slice(1) : s);
 const chars = (s) => [...s].length; // code points, like Postgres length()
 
 function isRealDate(s) {
@@ -63,17 +63,18 @@ function readRow(get) {
 }
 
 export function readRows(text) {
-  const [head = [], ...data] = parseCsv(text);
+  const [head = [], ...records] = parseCsv(text);
   const cols = head.map((h) => h.trim().toLowerCase());
   const missing = COLUMNS.filter((c) => !cols.includes(c));
   if (missing.length) return { fatal: `This isn't a Bills export: missing ${missing.join(", ")}.` };
+  // [cells, row number]: header is row 1; blank lines count but aren't data
+  const data = records.map((cells, i) => [cells, i + 2]).filter(([cells]) => cells.some((c) => c.trim() !== ""));
   if (data.length === 0) return { fatal: "The file has no movements." };
   if (data.length > MAX_ROWS) return { fatal: `Import up to ${MAX_ROWS} movements at a time.` };
 
   const rows = [];
   const errors = [];
-  data.forEach((cells, i) => {
-    const line = i + 2; // header is row 1
+  data.forEach(([cells, line]) => {
     const result = readRow((name) => unguard((cells[cols.indexOf(name)] ?? "").trim()));
     if (typeof result === "string") errors.push({ line, message: result });
     else rows.push({ line, ...result });
@@ -84,25 +85,34 @@ export function readRows(text) {
 export const catKey = (type, name) => `${type}|${name.trim().toLowerCase()}`;
 const dupKey = (date, amount, category, description) => `${date}|${Number(amount).toFixed(2)}|${category}|${description ?? ""}`;
 
-// Categories by type + case-insensitive name; duplicates against existing movements and earlier rows.
-// Rows of unknown categories can only duplicate each other (keyed by the unknown category).
-export function planImport(rows, categories, existing) {
+const choiceOf = (mapping, key) => mapping[key] ?? "new";
+
+// Categories by type + case-insensitive name (unknown ones resolved through mapping).
+// Each existing movement marks at most one row as its duplicate, so two identical
+// coffees in the file with one already saved leave the second one checked.
+export function planImport(rows, categories, existing, mapping = {}) {
   const ids = new Map(categories.map((c) => [catKey(c.type, c.name), c.id]));
+  const names = new Map(categories.map((c) => [c.id, c.name]));
   const unknown = new Map();
-  const seen = new Set(existing.map((m) => dupKey(m.date, m.amount, m.category_id, m.description)));
+  const left = new Map(); // duplicate key → existing movements not matched yet
+  for (const m of existing) {
+    const k = dupKey(m.date, m.amount, m.category_id, m.description);
+    left.set(k, (left.get(k) ?? 0) + 1);
+  }
   const planned = rows.map((r) => {
     const key = catKey(r.type, r.category);
     const categoryId = ids.get(key) ?? null;
     if (categoryId === null && !unknown.has(key)) unknown.set(key, { key, name: r.category, type: r.type });
-    const dup = dupKey(r.date, r.amount, categoryId ?? key, r.description);
-    const duplicate = seen.has(dup);
-    seen.add(dup);
-    return { ...r, categoryId, unknownKey: categoryId === null ? key : null, duplicate };
+    const choice = categoryId === null ? choiceOf(mapping, key) : null;
+    const target = categoryId ?? (choice === "new" ? null : Number(choice));
+    const dup = dupKey(r.date, r.amount, target, r.description);
+    const duplicate = target !== null && (left.get(dup) ?? 0) > 0;
+    if (duplicate) left.set(dup, left.get(dup) - 1);
+    const categoryName = names.get(target) ?? r.category;
+    return { ...r, categoryId, unknownKey: categoryId === null ? key : null, categoryName, duplicate };
   });
   return { rows: planned, unknown: [...unknown.values()] };
 }
-
-const choiceOf = (mapping, key) => mapping[key] ?? "new";
 
 // Unknown categories set to "new" that at least one selected row uses
 export function categoriesToCreate(plan, selected, mapping) {

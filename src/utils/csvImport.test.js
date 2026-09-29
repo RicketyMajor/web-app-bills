@@ -10,6 +10,7 @@ const csv = (...lines) => [HEAD, ...lines].join("\r\n");
 test("parseCsv handles quotes, escaped quotes, line breaks, BOM and blank lines", () => {
   assert.deepEqual(parseCsv(`${BOM}a,"b,c","say ""hi""\nbye"\r\n\r\nd,,e\n`), [
     ["a", "b,c", 'say "hi"\nbye'],
+    [""],
     ["d", "", "e"],
   ]);
 });
@@ -22,6 +23,17 @@ test("readRows reads the export back (round trip)", () => {
     { line: 2, date: "2026-09-24", description: "=SUM(A1)", category: "Groceries", type: "expense", amount: 92.5, paid: false },
     { line: 3, date: "2026-09-24", description: null, category: "Groceries", type: "expense", amount: 92.5, paid: true },
   ]);
+});
+
+test("readRows round-trips cells that start with a quote", () => {
+  const movement = { date: "2026-09-24", amount: "1", paid: true, categories: { name: "'+extra", type: "expense" } };
+  const { rows } = readRows(toCsv([{ ...movement, description: "'=total" }, { ...movement, description: "'hello" }]));
+  assert.deepEqual(rows.map((r) => [r.description, r.category]), [["'=total", "'+extra"], ["'hello", "'+extra"]]);
+});
+
+test("readRows row numbers count blank lines", () => {
+  const { errors } = readRows(csv("", "2026-02-01,x,Food,expense,-5,true"));
+  assert.deepEqual(errors.map((e) => e.line), [3]);
 });
 
 test("readRows accepts any column order, header case and an empty paid", () => {
@@ -84,14 +96,24 @@ test("planImport matches categories by type and case-insensitive name", () => {
   ]);
 });
 
-test("planImport flags duplicates of existing movements and earlier rows", () => {
+test("planImport: each existing movement marks one row as its duplicate", () => {
   const existing = [{ date: "2026-09-01", amount: "10.00", category_id: 1, description: null }];
   const plan = planImport(
-    [row(), row({ line: 3, description: "a" }), row({ line: 4, description: "a" }), row({ line: 5, category: "Pets" }), row({ line: 6, category: "PETS" })],
+    [row(), row({ line: 3 }), row({ line: 4, description: "a" }), row({ line: 5, description: "a" }), row({ line: 6, category: "Pets" })],
     cats,
     existing
   );
-  assert.deepEqual(plan.rows.map((r) => r.duplicate), [true, false, true, false, true]);
+  assert.deepEqual(plan.rows.map((r) => r.duplicate), [true, false, false, false, false]);
+});
+
+test("planImport checks mapped categories against their movements and names rows after them", () => {
+  const existing = [{ date: "2026-09-01", amount: "10.00", category_id: 1, description: null }];
+  const rows = [row({ category: "Food" })];
+  assert.equal(planImport(rows, cats, existing).rows[0].duplicate, false);
+  const mapped = planImport(rows, cats, existing, { "expense|food": "1" }).rows[0];
+  assert.equal(mapped.duplicate, true);
+  assert.equal(mapped.categoryName, "Groceries");
+  assert.equal(planImport(rows, cats, existing).rows[0].categoryName, "Food");
 });
 
 test("categoriesToCreate / movementsToInsert follow the selection and the mapping", () => {

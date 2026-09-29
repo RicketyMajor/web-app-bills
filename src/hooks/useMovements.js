@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../supabase/client";
 import { shiftMonth } from "../utils/movements";
+import { catKey, categoriesToCreate, movementsToInsert } from "../utils/csvImport";
 
 // type filters through the category (movements have no type column).
 // all = every month (Movements search); filters run client-side on these rows.
@@ -84,5 +85,52 @@ export function useDeleteMovement() {
       if (error) throw error;
     },
     onSuccess: () => invalidate(queryClient),
+  });
+}
+
+// Both types, for the import's duplicate check. Under 'movements' so saves refresh it.
+export function useMovementsBetween(from, to) {
+  return useQuery({
+    queryKey: ["movements", "between", from, to],
+    // Paged: PostgREST returns at most 1000 rows per request
+    queryFn: async () => {
+      const rows = [];
+      for (let start = 0; ; start += 1000) {
+        const { data, error } = await supabase
+          .from("movements")
+          .select("date, amount, description, category_id")
+          .gte("date", from)
+          .lte("date", to)
+          .order("id")
+          .range(start, start + 999);
+        if (error) throw error;
+        rows.push(...data);
+        if (data.length < 1000) return rows;
+      }
+    },
+    enabled: Boolean(from && to),
+  });
+}
+
+// New categories first (their ids resolve the rows), then every movement in one insert.
+// ponytail: two requests, not atomic — if the second fails the new (empty) categories stay; RPC if that ever matters
+export function useImportMovements() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ plan, selected, mapping }) => {
+      const created = new Map();
+      const newCategories = categoriesToCreate(plan, selected, mapping);
+      if (newCategories.length) {
+        const { data, error } = await supabase.from("categories").insert(newCategories).select("id, name, type");
+        if (error) throw error;
+        for (const c of data) created.set(catKey(c.type, c.name), c.id);
+      }
+      const { error } = await supabase.from("movements").insert(movementsToInsert(plan, selected, mapping, created));
+      if (error) throw error;
+    },
+    // Also on failure: categories created before a failed movements insert must show up
+    // as known, or a retry would try to create them again (23505)
+    onSettled: () =>
+      Promise.all([invalidate(queryClient), queryClient.invalidateQueries({ queryKey: ["categories"] })]),
   });
 }

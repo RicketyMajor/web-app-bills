@@ -1,7 +1,8 @@
 const HEADER = ["date", "description", "category", "type", "amount", "paid"];
 
-// Spreadsheets run cells starting with these as formulas (CSV injection)
-const FORMULA = /^[=+\-@\t\r]/;
+// Spreadsheets run cells starting with these as formulas (CSV injection); a leading '
+// is guarded too so the import (utils/csvImport.js) strips exactly one
+const FORMULA = /^[=+\-@\t\r']/;
 
 function cell(value) {
   let s = String(value ?? "");

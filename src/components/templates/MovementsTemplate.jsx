@@ -24,6 +24,7 @@ import { MonthSelector } from "../molecules/MonthSelector";
 import { MonthSlide } from "../molecules/MonthSlide";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { MovementDialog } from "../organisms/MovementDialog";
+import { ImportDialog } from "../organisms/ImportDialog";
 import { MovementFilters } from "../organisms/MovementFilters";
 import { ToolButton } from "../atoms/ToolButton";
 import { Muted } from "../atoms/Muted";
@@ -36,6 +37,7 @@ export function MovementsTemplate() {
   const money = useMoney();
   const month = useMonthStore((s) => s.month);
   const [editing, setEditing] = useState(null); // null = dialog closed
+  const [importing, setImporting] = useState(false);
   const { data: totals, isPlaceholderData: staleTotals } = useMonthTotals(month);
 
   // Type + filters render from local state, so inputs update with every keystroke
@@ -101,6 +103,10 @@ export function MovementsTemplate() {
       />
 
       <MovementFilters type={type} values={view} onChange={setFilter} onClear={clearFilters}>
+        <ToolButton onClick={() => setImporting(true)}>
+          <v.iconoSubir aria-hidden="true" />
+          Import CSV
+        </ToolButton>
         <ToolButton
           disabled={!rows?.length}
           onClick={() => downloadCsv(`movements-${all ? "all" : month.slice(0, 7)}-${type}.csv`, toCsv(rows))}
@@ -194,6 +200,7 @@ export function MovementsTemplate() {
       </MonthSlide>
 
       {editing && <MovementDialog movement={editing} onClose={() => setEditing(null)} />}
+      {importing && <ImportDialog onClose={() => setImporting(false)} />}
     </Container>
   );
 }
