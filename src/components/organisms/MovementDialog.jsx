@@ -142,7 +142,14 @@ export function MovementDialog({ movement, onClose }) {
           <span>Paid</span>
         </label>
 
-        {(save.isError || addRecurring.isError) && <p role="alert">Couldn't save the movement. Please try again.</p>}
+        {(save.isError || addRecurring.isError) && (
+          <p role="alert">
+            {/* 23505: unique (recurring_id, date) — one instance per repeat and date */}
+            {save.error?.code === "23505"
+              ? "Another movement from this repeat is already on that date."
+              : "Couldn't save the movement. Please try again."}
+          </p>
+        )}
 
         <ModalActions>
           <button type="button" onClick={onClose}>
