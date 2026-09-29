@@ -35,7 +35,7 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 - **Google sign-in** via Supabase Auth. Each account only sees its own data (Postgres row-level security).
 - **Home**: what's left of this month's budget (or income), this month's spending vs. last month day by day, recent movements, what's still **to pay** with due dates (settle it in one click), budgets, top categories and active goals.
 - **Categories** for income and expenses, with emoji, color, this month's total and an optional monthly budget.
-- **Movements** by month: amount, category, date, description, paid/pending. Monthly totals, search and filters (text, category, status, amount, all months) and **CSV export** of what you see.
+- **Movements** by month: amount, category, date, description, paid/pending. Monthly totals, search and filters (text, category, status, amount, all months), **CSV export** of what you see and **CSV import** of an export (preview, new categories, duplicates left unchecked).
 - **Recurring movements**: weekly, monthly or yearly rules that add pending movements when they're due; pause, resume or delete them in Settings.
 - **Savings goals**: a target, an optional deadline with the monthly pace to reach it, and a history of contributions and withdrawals.
 - **Reports**: 6-month income vs. expense trend and a ranked breakdown by category with month-over-month changes, each with an accessible table view.
