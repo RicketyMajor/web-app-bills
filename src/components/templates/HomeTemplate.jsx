@@ -25,6 +25,7 @@ import { CumulativeChart } from "../organisms/CumulativeChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
 import { ToPayList } from "../organisms/ToPayList";
 import { BudgetList } from "../organisms/BudgetList";
+import { GoalSummary } from "../organisms/GoalSummary";
 import { MovementDialog } from "../organisms/MovementDialog";
 
 function greeting(hour) {
@@ -148,6 +149,8 @@ export function HomeTemplate() {
                 <BudgetList rows={budgets.slice(0, 5)} />
               </Card>
             )}
+
+            <GoalSummary />
 
             <Card className="where" aria-labelledby="where-title" aria-busy={breakdown.isPending}>
               <div className="head">
