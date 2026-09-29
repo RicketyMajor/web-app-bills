@@ -54,7 +54,8 @@ export function GoalDetail({ goal, progress, onAdd, onWithdraw, onEdit, onDelete
           <Badge>Reached</Badge>
         </p>
       ) : (
-        pace && <p className="pace">{pace}</p>
+        // No deadline → no pace; say what's left instead of leaving the line empty
+        <p className="pace">{pace || `${bare(progress.left)} to go`}</p>
       )}
 
       <div className="actions">
