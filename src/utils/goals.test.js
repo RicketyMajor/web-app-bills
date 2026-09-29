@@ -29,6 +29,12 @@ test("goalProgress sums contributions and withdrawals in cents", () => {
   assert.equal(p.overdue, false);
 });
 
+test("goalProgress.percent is exact (no floating-point 56.99…)", () => {
+  assert.equal(goalProgress(goal({ target: "1000", goal_contributions: [c("570")] }), "2026-09-28").percent, 57);
+  assert.equal(goalProgress(goal({ target: "5000", goal_contributions: [c("1450")] }), "2026-09-28").percent, 29);
+  assert.equal(goalProgress(goal({ target: "3", goal_contributions: [c("2")] }), "2026-09-28").percent, 66);
+});
+
 test("goalProgress: past the target counts as reached with nothing left", () => {
   const p = goalProgress(goal({ target: "100", goal_contributions: [c("150")] }), "2026-09-28");
   assert.equal(p.reached, true);

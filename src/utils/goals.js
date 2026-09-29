@@ -20,6 +20,8 @@ export function goalProgress(goal, today) {
     saved: savedCents / 100,
     left: leftCents / 100,
     ratio: savedCents / targetCents,
+    // Integer math: 0.57 * 100 is 56.99… in floating point
+    percent: Math.floor((savedCents * 100) / targetCents),
     reached,
     perMonth,
     overdue,

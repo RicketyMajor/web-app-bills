@@ -6,6 +6,7 @@ import {
   RiPriceTag3Line,
   RiExchangeDollarLine,
   RiPieChart2Line,
+  RiFlag2Line,
   RiSettings3Line,
   RiSunLine,
   RiMoonLine,
@@ -28,6 +29,7 @@ const links = [
   { to: "/categories", label: "Categories", icon: RiPriceTag3Line },
   { to: "/movements", label: "Movements", icon: RiExchangeDollarLine },
   { to: "/reports", label: "Reports", icon: RiPieChart2Line },
+  { to: "/goals", label: "Goals", icon: RiFlag2Line },
   { to: "/settings", label: "Settings", icon: RiSettings3Line },
 ];
 
@@ -248,6 +250,7 @@ const Nav = styled.nav`
     flex: 1;
     flex-direction: row;
     justify-content: space-around;
+    min-width: 0;
   }
 `;
 
@@ -267,6 +270,13 @@ const Item = styled(NavLink)`
   &.active {
     color: ${({ theme }) => theme.accent};
     font-weight: 600;
+  }
+  /* Bottom bar: the 6 links share the width, so 8 items fit down to 320px */
+  @media (max-width: ${v.bpbart}) {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    padding-inline: 0;
   }
 `;
 

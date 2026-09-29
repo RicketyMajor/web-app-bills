@@ -10,6 +10,7 @@ const Home = lazy(() => import('../pages/Home').then((m) => ({ default: m.Home }
 const Categories = lazy(() => import('../pages/Categories').then((m) => ({ default: m.Categories })));
 const Movements = lazy(() => import('../pages/Movements').then((m) => ({ default: m.Movements })));
 const Reports = lazy(() => import('../pages/Reports').then((m) => ({ default: m.Reports })));
+const Goals = lazy(() => import('../pages/Goals').then((m) => ({ default: m.Goals })));
 const Settings = lazy(() => import('../pages/Settings').then((m) => ({ default: m.Settings })));
 const Privacy = lazy(() => import('../pages/Privacy').then((m) => ({ default: m.Privacy })));
 const Terms = lazy(() => import('../pages/Terms').then((m) => ({ default: m.Terms })));
@@ -28,6 +29,7 @@ export function MyRoutes() {
                             <Route path="/categories" element={<Categories />} />
                             <Route path="/movements" element={<Movements />} />
                             <Route path="/reports" element={<Reports />} />
+                            <Route path="/goals" element={<Goals />} />
                             <Route path="/settings" element={<Settings />} />
                         </Route>
                     </Route>
