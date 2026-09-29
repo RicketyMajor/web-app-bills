@@ -21,6 +21,7 @@ export function MovementDialog({ movement, onClose }) {
   // Repeat is offered only when creating; its hint follows the chosen date
   const [repeat, setRepeat] = useState("");
   const [date, setDate] = useState(movement.date);
+  const showHint = repeat && date;
   // Unpaid: the date is when it's due
   const [paid, setPaid] = useState(movement.paid ?? true);
   const { data: categories, isPending, isError } = useCategories(movement.type);
@@ -35,6 +36,9 @@ export function MovementDialog({ movement, onClose }) {
       description: form.get("description").trim() || null,
       paid: form.get("paid") === "on",
     };
+    // Clear the other path's old error so the alert describes this attempt
+    save.reset();
+    addRecurring.reset();
     if (repeat) addRecurring.mutate({ ...fields, frequency: repeat }, { onSuccess: onClose });
     else save.mutate({ id: movement.id, ...fields }, { onSuccess: onClose });
   };
@@ -110,11 +114,12 @@ export function MovementDialog({ movement, onClose }) {
 
         {!movement.id && (
           <label>
-            <span>Repeat</span>
+            <span id={`${hintId}-label`}>Repeat</span>
             <select
               value={repeat}
               onChange={(e) => setRepeat(e.target.value)}
-              aria-describedby={repeat && date ? hintId : undefined}
+              aria-labelledby={`${hintId}-label`}
+              aria-describedby={showHint ? hintId : undefined}
             >
               {REPEATS.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -122,8 +127,8 @@ export function MovementDialog({ movement, onClose }) {
                 </option>
               ))}
             </select>
-            {repeat && date && (
-              <small className="hint" id={hintId} aria-hidden="true">
+            {showHint && (
+              <small className="hint" id={hintId}>
                 {repeatLabel(repeat, date)}
                 {repeat === "monthly" && Number(date.slice(8)) > 28 && " (last day in shorter months)"}. Added as
                 pending each time.

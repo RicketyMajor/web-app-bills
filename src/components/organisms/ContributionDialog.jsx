@@ -41,7 +41,7 @@ export function ContributionDialog({ goal, saved, mode: initialMode, onClose }) 
         {/* Nothing saved yet: only adding makes sense */}
         {saved > 0 && <SegmentedControl value={mode} onChange={setMode} options={MODES} label="Add or withdraw" />}
         <label>
-          <span>Amount</span>
+          <span id={`${hintId}-label`}>Amount</span>
           <input
             name="amount"
             type="number"
@@ -51,10 +51,11 @@ export function ContributionDialog({ goal, saved, mode: initialMode, onClose }) 
             step="0.01"
             required
             autoFocus
+            aria-labelledby={`${hintId}-label`}
             aria-describedby={withdraw ? hintId : undefined}
           />
           {withdraw && (
-            <small className="hint" id={hintId} aria-hidden="true">
+            <small className="hint" id={hintId}>
               {bare(saved)} saved in this goal.
             </small>
           )}

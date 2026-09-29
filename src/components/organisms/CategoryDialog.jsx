@@ -53,7 +53,7 @@ export function CategoryDialog({ category, onClose }) {
 
         {category.type === "expense" && (
           <label>
-            <span>Monthly budget</span>
+            <span id={`${hintId}-label`}>Monthly budget</span>
             <input
               name="budget"
               type="number"
@@ -63,9 +63,10 @@ export function CategoryDialog({ category, onClose }) {
               step="0.01"
               placeholder="No limit"
               defaultValue={category.budget ?? ""}
+              aria-labelledby={`${hintId}-label`}
               aria-describedby={hintId}
             />
-            <small className="hint" id={hintId} aria-hidden="true">
+            <small className="hint" id={hintId}>
               One-month changes and rollover are on the Budgets page.
             </small>
           </label>

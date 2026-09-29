@@ -30,24 +30,24 @@ export function BudgetDialog({ category, month, override, onClose }) {
     <Modal title={`${category.name} budget`} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <label>
-          <span>Monthly budget</span>
-          <input name="budget" {...MONEY} defaultValue={category.budget ?? ""} placeholder="No budget" autoFocus aria-describedby={`${hintId}-budget`} />
-          <small className="hint" id={`${hintId}-budget`} aria-hidden="true">
+          <span id={`${hintId}-budget-label`}>Monthly budget</span>
+          <input name="budget" {...MONEY} defaultValue={category.budget ?? ""} placeholder="No budget" autoFocus aria-labelledby={`${hintId}-budget-label`} aria-describedby={`${hintId}-budget`} />
+          <small className="hint" id={`${hintId}-budget`}>
             Applies every month.
           </small>
         </label>
         <label>
-          <span>{monthLong} only</span>
-          <input name="override" {...MONEY} defaultValue={override ?? ""} placeholder="Same as monthly" aria-describedby={`${hintId}-override`} />
-          <small className="hint" id={`${hintId}-override`} aria-hidden="true">
+          <span id={`${hintId}-override-label`}>{monthLong} only</span>
+          <input name="override" {...MONEY} defaultValue={override ?? ""} placeholder="Same as monthly" aria-labelledby={`${hintId}-override-label`} aria-describedby={`${hintId}-override`} />
+          <small className="hint" id={`${hintId}-override`}>
             Leave empty to use the monthly budget.
           </small>
         </label>
         <label className="check">
-          <input name="rollover" type="checkbox" defaultChecked={category.rollover} aria-describedby={`${hintId}-rollover`} />
+          <input name="rollover" type="checkbox" defaultChecked={category.rollover} aria-labelledby={`${hintId}-rollover-label`} aria-describedby={`${hintId}-rollover`} />
           <span>
-            Roll over from last month
-            <small className="hint" id={`${hintId}-rollover`} aria-hidden="true">
+            <span id={`${hintId}-rollover-label`}>Roll over from last month</span>
+            <small className="hint" id={`${hintId}-rollover`}>
               Adds what was left last month, or takes off what went over.
             </small>
           </span>
