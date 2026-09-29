@@ -76,14 +76,15 @@ export function ImportDialog({ onClose }) {
 
         {read?.fatal && <p role="alert">{read.fatal}</p>}
         {loadFailed && <p role="alert">Couldn't check your categories and movements. Please try again.</p>}
-        {read?.rows && !plan && !loadFailed && read.rows.length > 0 && <Muted>Reading…</Muted>}
+        {/* Always mounted so screen readers announce "Reading…" and then the summary */}
+        <Status aria-live="polite">
+          {plan
+            ? `${selected.size} to import · ${duplicates} duplicate${duplicates === 1 ? "" : "s"} · ${read.errors.length} with errors`
+            : read?.rows?.length > 0 && !loadFailed && "Reading…"}
+        </Status>
 
         {plan && (
           <>
-            <Muted aria-live="polite">
-              {selected.size} to import · {duplicates} duplicate{duplicates === 1 ? "" : "s"} · {read.errors.length} with errors
-            </Muted>
-
             {plan.unknown.length > 0 && (
               <NewCategories>
                 <legend>New categories</legend>
@@ -298,5 +299,12 @@ const Errors = styled.details`
   ul {
     margin-top: 6px;
     padding-left: 18px;
+  }
+`;
+
+// Empty until a file is read: cancel the form's 16px gap so the layout doesn't shift
+const Status = styled(Muted)`
+  &:empty {
+    margin-top: -16px;
   }
 `;
