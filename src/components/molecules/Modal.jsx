@@ -6,9 +6,13 @@ import { v } from "../../styles/variables";
 export function Modal({ title, onClose, wide, children }) {
   const ref = useRef(null);
   const titleId = useId();
+  const opener = useRef(document.activeElement); // read on first render, before the dialog takes focus
 
   useEffect(() => {
     if (!ref.current.open) ref.current.showModal(); // StrictMode runs effects twice
+    // Unmounting skips the native close, so focus would drop to <body>: hand it back
+    // (to <main> when the opener is gone, e.g. "Set budget" once the budget exists)
+    return () => (opener.current?.isConnected ? opener.current : document.querySelector("main"))?.focus();
   }, []);
 
   return (

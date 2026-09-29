@@ -13,7 +13,7 @@ export function AppLayout() {
   return (
     <Container>
       <Sidebar />
-      <Main>
+      <Main tabIndex={-1}>
         {/* Pages are lazy-loaded; suspend here so the sidebar stays put */}
         <Suspense fallback={null}>
           <motion.div
@@ -44,6 +44,11 @@ const Container = styled.div`
 const Main = styled.main`
   min-width: 0;
   padding: 32px 40px;
+
+  /* Focusable only as the Modal's fallback target: no ring around the page */
+  &:focus {
+    outline: none;
+  }
 
   @media (max-width: ${v.bpbart}) {
     padding: 24px 16px;
