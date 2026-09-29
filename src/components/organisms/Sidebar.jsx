@@ -18,7 +18,7 @@ import { visuallyHidden } from "../../styles/visuallyHidden";
 import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
-import { monthStart } from "../../utils/movements";
+import { monthName, monthStart } from "../../utils/movements";
 import { useMoney, useProfile, useUpdateProfile } from "../../hooks/useProfile";
 import { Logo } from "../atoms/Logo";
 import { AnimatedNumber } from "../atoms/AnimatedNumber";
@@ -34,8 +34,8 @@ const links = [
   { to: "/settings", label: "Settings", icon: RiSettings3Line },
 ];
 
-const monthName = new Date().toLocaleDateString("en-US", { month: "long" });
 const currentMonth = monthStart(new Date());
+const currentMonthName = monthName(currentMonth);
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -71,7 +71,7 @@ export function Sidebar() {
       </Brand>
 
       <Balance $collapsed={collapsed} $sign={Math.sign(balance ?? 0)}>
-        <span>{monthName}</span>
+        <span>{currentMonthName}</span>
         <strong>{balance === undefined ? "—" : <AnimatedNumber value={balance} format={money} />}</strong>
       </Balance>
 

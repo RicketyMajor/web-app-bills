@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { v } from "../../styles/variables";
 
@@ -6,15 +6,19 @@ import { v } from "../../styles/variables";
 export function Modal({ title, onClose, wide, children }) {
   const ref = useRef(null);
   const titleId = useId();
-  const opener = useRef(document.activeElement); // read on first render, before the dialog takes focus
+  const [opener] = useState(() => document.activeElement); // before the dialog takes focus
 
   useEffect(() => {
     if (!ref.current.open) ref.current.showModal(); // StrictMode runs effects twice
-    // Unmounting skips the native close, so focus would drop to <body>: hand it back
-    // (to <main> when the opener is gone, e.g. "Set budget" once the budget exists)
-    const el = opener.current;
-    return () => (el?.isConnected ? el : document.querySelector("main"))?.focus();
-  }, []);
+    // Unmounting skips the native close, so focus would drop to <body>: hand it back.
+    // A frame later, so a save that also removes the opener (e.g. "Set budget") has rendered;
+    // <main> when the opener is gone or was <body> (Safari doesn't focus clicked buttons).
+    return () =>
+      requestAnimationFrame(() => {
+        if (opener !== document.body && opener?.isConnected) opener.focus();
+        else document.querySelector("main")?.focus({ preventScroll: true });
+      });
+  }, [opener]);
 
   return (
     <Dialog ref={ref} onClose={onClose} aria-labelledby={titleId} $wide={wide}>
