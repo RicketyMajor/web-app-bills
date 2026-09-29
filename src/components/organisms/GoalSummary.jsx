@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { rowMotion } from "../../styles/motion";
-import { isoDate } from "../../utils/movements";
+import { useToday } from "../../hooks/useToday";
 import { sortGoals } from "../../utils/goals";
 import { useGoals } from "../../hooks/useGoals";
 import { useBareMoney } from "../../hooks/useProfile";
@@ -14,8 +14,9 @@ import { Meter } from "../atoms/Meter";
 export function GoalSummary() {
   const bare = useBareMoney();
   const goals = useGoals();
+  const today = useToday();
   if (!goals.data) return null;
-  const { active } = sortGoals(goals.data, isoDate(new Date()));
+  const { active } = sortGoals(goals.data, today);
   if (active.length === 0) return null;
 
   return (

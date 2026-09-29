@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
 import { rowMotion } from "../../styles/motion";
 import { useAuthStore } from "../../store/authStore";
-import { isoDate, monthName, monthStart, shiftMonth, shortDate } from "../../utils/movements";
+import { monthName, shiftMonth, shortDate } from "../../utils/movements";
+import { useCurrentMonth, useToday } from "../../hooks/useToday";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
@@ -45,8 +46,8 @@ export function HomeTemplate() {
   const profile = useProfile().data;
   // Name edited in Settings wins; Google metadata is the fallback
   const firstName = (profile?.full_name || user?.user_metadata?.full_name || user?.email)?.split(" ")[0];
-  const now = new Date();
-  const month = monthStart(now);
+  const today = useToday();
+  const month = useCurrentMonth();
   const monthLong = monthName(month);
   const prevName = monthName(shiftMonth(month, -1));
   const [adding, setAdding] = useState(false);
@@ -65,7 +66,7 @@ export function HomeTemplate() {
 
   return (
     <Container>
-      <PageHeader title={`${greeting(now.getHours())}, ${firstName}`}>
+      <PageHeader title={`${greeting(new Date().getHours())}, ${firstName}`}>
         <PrimaryButton type="button" onClick={() => setAdding(true)}>
           <v.agregar aria-hidden="true" />
           New expense
@@ -171,7 +172,7 @@ export function HomeTemplate() {
                 <Muted>No expenses in {monthLong} yet.</Muted>
               ) : (
                 // Top 4 by amount; % stays the share of the whole month
-                <CategoryBreakdown rows={breakdown.data} limit={4} compare={compareLabel(month, isoDate(now))} />
+                <CategoryBreakdown rows={breakdown.data} limit={4} compare={compareLabel(month, today)} />
               )}
             </Card>
           </div>
@@ -179,7 +180,7 @@ export function HomeTemplate() {
       )}
 
       {adding && (
-        <MovementDialog movement={{ type: "expense", date: isoDate(now) }} onClose={() => setAdding(false)} />
+        <MovementDialog movement={{ type: "expense", date: today }} onClose={() => setAdding(false)} />
       )}
     </Container>
   );

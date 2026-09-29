@@ -19,7 +19,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { monthName } from "../../utils/movements";
-import { useToday } from "../../hooks/useToday";
+import { useCurrentMonth } from "../../hooks/useToday";
 import { useMoney, useProfile, useUpdateProfile } from "../../hooks/useProfile";
 import { Logo } from "../atoms/Logo";
 import { AnimatedNumber } from "../atoms/AnimatedNumber";
@@ -36,13 +36,15 @@ const links = [
 ];
 
 export function Sidebar() {
-  const currentMonth = `${useToday().slice(0, 7)}-01`;
+  const currentMonth = useCurrentMonth();
   const [collapsed, setCollapsed] = useState(false);
   const user = useAuthStore((s) => s.session?.user);
   const signOut = useAuthStore((s) => s.signOut);
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
-  const balance = useMonthTotals(currentMonth).data?.balance;
+  const totals = useMonthTotals(currentMonth);
+  // A new month's label shows "—" until its own balance loads (not last month's figure)
+  const balance = totals.isPlaceholderData ? undefined : totals.data?.balance;
   const money = useMoney();
   const profile = useProfile().data;
   const updateProfile = useUpdateProfile();

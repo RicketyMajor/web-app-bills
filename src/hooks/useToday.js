@@ -16,3 +16,6 @@ export function useToday() {
   }, []);
   return today;
 }
+
+// This month's first day ("YYYY-MM-01"), live like useToday
+export const useCurrentMonth = () => `${useToday().slice(0, 7)}-01`;

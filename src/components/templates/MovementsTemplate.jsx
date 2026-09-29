@@ -4,7 +4,8 @@ import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
 import { rowMotion } from "../../styles/motion";
-import { activeFilterCount, filterMovements, isoDate, monthStart, shortDate, sumTotals } from "../../utils/movements";
+import { activeFilterCount, filterMovements, shortDate, sumTotals } from "../../utils/movements";
+import { useToday } from "../../hooks/useToday";
 import { downloadCsv, toCsv } from "../../utils/csv";
 import { useMonthStore } from "../../store/monthStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
@@ -61,7 +62,8 @@ export function MovementsTemplate() {
   const remove = useDeleteMovement();
 
   // New movements default to today when viewing the current month
-  const newDate = month === monthStart(new Date()) ? isoDate(new Date()) : month;
+  const today = useToday();
+  const newDate = month === `${today.slice(0, 7)}-01` ? today : month;
   const sign = type === "income" ? 1 : -1;
 
   const handleDelete = (m) => {

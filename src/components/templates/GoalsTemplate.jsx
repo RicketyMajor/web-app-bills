@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import { v } from "../../styles/variables";
-import { isoDate } from "../../utils/movements";
+import { useToday } from "../../hooks/useToday";
 import { sortGoals } from "../../utils/goals";
 import { useDeleteGoal, useGoals } from "../../hooks/useGoals";
 import { PrimaryButton } from "../atoms/PrimaryButton";
@@ -24,7 +24,7 @@ export function GoalsTemplate() {
   const [params, setParams] = useSearchParams();
   const [dialog, setDialog] = useState(null); // null | { kind: "goal", goal } | { kind: "contribution", mode, goal, progress }
   const detailRef = useRef(null);
-  const today = isoDate(new Date());
+  const today = useToday();
 
   const { active, reached } = goals.data ? sortGoals(goals.data, today) : { active: [], reached: [] };
   const all = [...active, ...reached];

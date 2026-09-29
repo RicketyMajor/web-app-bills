@@ -7,7 +7,7 @@ import { tileMotion } from "../../styles/motion";
 import { categoryErrorMessage, useCategories, useDeleteCategory } from "../../hooks/useCategories";
 import { useCategoryBreakdown } from "../../hooks/useReports";
 import { useBudgetMonth } from "../../hooks/useBudgets";
-import { useToday } from "../../hooks/useToday";
+import { useCurrentMonth } from "../../hooks/useToday";
 import { budgetRows } from "../../utils/budgets";
 import { ToolButton } from "../atoms/ToolButton";
 import { useBareMoney } from "../../hooks/useProfile";
@@ -29,7 +29,7 @@ function tileTotal(spent, budget, bare) {
 }
 
 export function CategoriesTemplate() {
-  const currentMonth = `${useToday().slice(0, 7)}-01`;
+  const currentMonth = useCurrentMonth();
   const bare = useBareMoney();
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
