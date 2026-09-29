@@ -14,7 +14,7 @@ import { LoadError } from "../molecules/LoadError";
 import { Muted } from "../atoms/Muted";
 import { Alert } from "../atoms/Alert";
 
-// Unpaid movements, oldest first (late ones on top). One click settles one; the row leaves when the list refetches.
+// Unpaid movements, oldest first (late ones on top). One click settles one (only that row waits); the row leaves when the list refetches.
 export function ToPayList() {
   const money = useMoney();
   const pending = usePendingMovements();
@@ -55,7 +55,7 @@ export function ToPayList() {
                 <button
                   type="button"
                   onClick={() => save.mutate({ id: m.id, paid: true })}
-                  disabled={save.isPending}
+                  disabled={settling}
                   aria-label={`Mark ${title} as ${income ? "received" : "paid"}`}
                   title={income ? "Mark received" : "Mark paid"}
                 >
