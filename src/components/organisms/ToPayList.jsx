@@ -3,7 +3,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { RiCheckLine } from "react-icons/ri";
 import { v } from "../../styles/variables";
 import { rowMotion, ease } from "../../styles/motion";
-import { dueLabel, isoDate } from "../../utils/movements";
+import { dueLabel } from "../../utils/movements";
+import { useToday } from "../../hooks/useToday";
 import { useMoney } from "../../hooks/useProfile";
 import { usePendingMovements, useSaveMovement } from "../../hooks/useMovements";
 import { CategorySwatch } from "../atoms/CategorySwatch";
@@ -19,7 +20,7 @@ export function ToPayList() {
   const money = useMoney();
   const pending = usePendingMovements();
   const save = useSaveMovement();
-  const today = isoDate(new Date());
+  const today = useToday();
 
   if (pending.isPending)
     return (

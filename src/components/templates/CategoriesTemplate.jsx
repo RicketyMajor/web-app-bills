@@ -4,10 +4,10 @@ import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
 import { tileMotion } from "../../styles/motion";
-import { monthStart } from "../../utils/movements";
 import { categoryErrorMessage, useCategories, useDeleteCategory } from "../../hooks/useCategories";
 import { useCategoryBreakdown } from "../../hooks/useReports";
 import { useBudgetMonth } from "../../hooks/useBudgets";
+import { useToday } from "../../hooks/useToday";
 import { budgetRows } from "../../utils/budgets";
 import { ToolButton } from "../atoms/ToolButton";
 import { useBareMoney } from "../../hooks/useProfile";
@@ -22,8 +22,6 @@ import { IconButton } from "../atoms/IconButton";
 import { Muted } from "../atoms/Muted";
 import { Alert } from "../atoms/Alert";
 
-const currentMonth = monthStart(new Date());
-
 // "120 of 300 this month" when budgeted; otherwise the plain total
 function tileTotal(spent, budget, bare) {
   if (budget != null) return `${bare(spent ?? 0)} of ${budget < 0 ? "-" : ""}${bare(budget)} this month`;
@@ -31,6 +29,7 @@ function tileTotal(spent, budget, bare) {
 }
 
 export function CategoriesTemplate() {
+  const currentMonth = `${useToday().slice(0, 7)}-01`;
   const bare = useBareMoney();
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
