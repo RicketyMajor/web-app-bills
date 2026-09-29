@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { useAddContribution } from "../../hooks/useGoals";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { isoDate } from "../../utils/movements";
 import { canWithdraw } from "../../utils/goals";
 
@@ -14,7 +14,7 @@ const MODES = [
 // Money in or out of a goal. Withdrawals can't exceed what's saved (input max + canWithdraw).
 export function ContributionDialog({ goal, saved, mode: initialMode, onClose }) {
   const add = useAddContribution();
-  const money = useMoney();
+  const bare = useBareMoney();
   const [mode, setMode] = useState(initialMode);
   const withdraw = mode === "withdraw";
 
@@ -51,7 +51,7 @@ export function ContributionDialog({ goal, saved, mode: initialMode, onClose }) 
             required
             autoFocus
           />
-          {withdraw && <small className="hint">{money(saved).replace("+", "")} saved in this goal.</small>}
+          {withdraw && <small className="hint">{bare(saved)} saved in this goal.</small>}
         </label>
         <label>
           <span>Date</span>

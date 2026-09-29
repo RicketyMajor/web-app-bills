@@ -37,6 +37,12 @@ export function useMoney() {
   return (amount) => formatMoney(amount, currency);
 }
 
+// Magnitude without a sign, for totals and "X of Y" lines
+export function useBareMoney() {
+  const money = useMoney();
+  return (amount) => money(Math.abs(amount)).replace("+", "");
+}
+
 // Deleting the auth user cascades to profile, categories and movements.
 // Local sign-out: the server session died with the user.
 export function useDeleteAccount() {

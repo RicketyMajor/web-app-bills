@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { v } from "../../styles/variables";
 import { shortDate } from "../../utils/movements";
 import { canRemove, historyOf, paceLabel } from "../../utils/goals";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { useDeleteContribution } from "../../hooks/useGoals";
 import { Card } from "../atoms/Card";
 import { Meter } from "../atoms/Meter";
@@ -12,14 +12,13 @@ import { ToolButton } from "../atoms/ToolButton";
 
 // Right column of /goals: progress, pace, actions and the history (newest first)
 export function GoalDetail({ goal, progress, onAdd, onWithdraw, onEdit, onDelete, deleting }) {
-  const money = useMoney();
-  const bare = (n) => money(n).replace("+", "");
+  const bare = useBareMoney();
   const remove = useDeleteContribution();
   const pace = paceLabel(progress, goal.deadline, bare);
   const history = historyOf(goal);
 
   const handleRemove = (c) => {
-    if (confirm(`Delete this ${bare(Math.abs(c.amount))} ${c.amount < 0 ? "withdrawal" : "contribution"}?`))
+    if (confirm(`Delete this ${bare(c.amount)} ${c.amount < 0 ? "withdrawal" : "contribution"}?`))
       remove.mutate(c.id);
   };
 
@@ -82,7 +81,7 @@ export function GoalDetail({ goal, progress, onAdd, onWithdraw, onEdit, onDelete
                 <span className="note">{c.note || (out ? "Withdrawn" : "Added")}</span>
                 <span className="amount">
                   {out ? "−" : "+"}
-                  {bare(Math.abs(c.amount))}
+                  {bare(c.amount)}
                 </span>
                 <IconButton
                   type="button"
@@ -90,7 +89,7 @@ export function GoalDetail({ goal, progress, onAdd, onWithdraw, onEdit, onDelete
                   onClick={() => handleRemove(c)}
                   disabled={remove.isPending || !removable}
                   title={removable ? undefined : "Can't delete: the goal would go below zero"}
-                  aria-label={`Delete ${out ? "withdrawal" : "contribution"} of ${bare(Math.abs(c.amount))} on ${shortDate(c.date)}${removable ? "" : " (not possible: the goal would go below zero)"}`}
+                  aria-label={`Delete ${out ? "withdrawal" : "contribution"} of ${bare(c.amount)} on ${shortDate(c.date)}${removable ? "" : " (not possible: the goal would go below zero)"}`}
                 >
                   <v.iconeliminarTabla aria-hidden="true" />
                 </IconButton>

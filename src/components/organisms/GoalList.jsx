@@ -126,11 +126,4 @@ const Nav = styled.nav`
     height: 100%;
     background: ${({ theme }) => theme.accent};
   }
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-  }
 `;

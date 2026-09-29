@@ -13,7 +13,7 @@ export function EmojiPicker({ value, onChange }) {
         <v.iconoFlechabajo aria-hidden="true" className="chevron" />
       </summary>
       <fieldset>
-        <legend>Choose an emoji</legend>
+        <legend className="sr-only">Choose an emoji</legend>
         {EMOJIS.map((e) => (
           <label key={e}>
             <input type="radio" name="icon" value={e} checked={value === e} onChange={() => onChange(e)} />
@@ -66,13 +66,6 @@ const Picker = styled.details`
     padding: 8px;
     border: none;
     border-top: 1px solid ${({ theme }) => theme.border};
-  }
-  legend {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
   }
   label {
     position: relative;

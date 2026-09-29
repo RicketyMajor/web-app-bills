@@ -12,6 +12,8 @@ import { PageHeader } from "../molecules/PageHeader";
 import { LoadError } from "../molecules/LoadError";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { RecurringList } from "../organisms/RecurringList";
+import { Muted } from "../atoms/Muted";
+import { Alert } from "../atoms/Alert";
 
 const currencyName = new Intl.DisplayNames("en", { type: "currency" });
 const CONFIRM_WORD = "DELETE";
@@ -224,14 +226,4 @@ const DangerButton = styled.button`
   &:active {
     transform: scale(0.97);
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
-  font-size: 14px;
 `;

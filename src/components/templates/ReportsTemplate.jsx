@@ -13,6 +13,7 @@ import { MonthSlide } from "../molecules/MonthSlide";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { TrendChart } from "../organisms/TrendChart";
 import { CategoryBreakdown } from "../organisms/CategoryBreakdown";
+import { Muted } from "../atoms/Muted";
 
 export function ReportsTemplate() {
   const month = useMonthStore((s) => s.month);
@@ -73,9 +74,4 @@ const Container = styled.div`
     flex-direction: column;
     gap: 20px;
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
 `;

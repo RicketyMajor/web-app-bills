@@ -1,14 +1,13 @@
 import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { rowMotion } from "../../styles/motion";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { Meter } from "../atoms/Meter";
 
 // Rows from budgetRows(): spent vs cap per category. Over budget turns the meter and figure expenseText.
 export function BudgetList({ rows }) {
-  const money = useMoney();
-  const bare = (n) => money(Math.abs(n)).replace("+", "");
+  const bare = useBareMoney();
 
   return (
     <List>

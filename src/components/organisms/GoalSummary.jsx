@@ -5,19 +5,18 @@ import { rowMotion } from "../../styles/motion";
 import { isoDate } from "../../utils/movements";
 import { sortGoals } from "../../utils/goals";
 import { useGoals } from "../../hooks/useGoals";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { Card } from "../atoms/Card";
 import { Meter } from "../atoms/Meter";
 
 // Home side card: up to 3 active goals (soonest deadline first). Hidden when there are none.
 // ponytail: no skeleton/error here (like Budgets) — the Goals page shows those states
 export function GoalSummary() {
-  const money = useMoney();
+  const bare = useBareMoney();
   const goals = useGoals();
   if (!goals.data) return null;
   const { active } = sortGoals(goals.data, isoDate(new Date()));
   if (active.length === 0) return null;
-  const bare = (n) => money(n).replace("+", "");
 
   return (
     <Card className="goals" aria-labelledby="goals-title">

@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { motion } from "motion/react";
 import { ease } from "../../styles/motion";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 
 // "↑18%" / "↓12%" / "New"; neutral on purpose (up is bad for spending, good for income)
@@ -11,7 +11,7 @@ function Delta({ delta, compare }) {
     return (
       <small title={`None in ${compare}`}>
         <span aria-hidden="true">New</span>
-        <span className="sr">new, none in {compare}</span>
+        <span className="sr-only">new, none in {compare}</span>
       </small>
     );
   const pct = Math.round(Math.abs(delta) * 100);
@@ -23,7 +23,7 @@ function Delta({ delta, compare }) {
         {delta > 0 ? "↑" : "↓"}
         {pct}%
       </span>
-      <span className="sr">{text}</span>
+      <span className="sr-only">{text}</span>
     </small>
   );
 }
@@ -31,7 +31,7 @@ function Delta({ delta, compare }) {
 // Ranked list; bar width is relative to the top category, % is share of the month.
 // Every value is printed, so the list is its own table view.
 export function CategoryBreakdown({ rows, limit, compare }) {
-  const money = useMoney();
+  const bare = useBareMoney();
   const sum = rows.reduce((s, r) => s + r.total, 0);
   const top = rows[0]?.total || 1;
 
@@ -47,7 +47,7 @@ export function CategoryBreakdown({ rows, limit, compare }) {
                 <Delta delta={r.delta} compare={compare} />
               </span>
               <span className="value">
-                {money(r.total).replace("+", "")}
+                {bare(r.total)}
                 <small>{Math.round((r.total / sum) * 100)}%</small>
               </span>
             </div>
@@ -103,14 +103,6 @@ const List = styled.ul`
   }
   .label small {
     flex-shrink: 0;
-  }
-  .sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
   .value {
     font-weight: 600;

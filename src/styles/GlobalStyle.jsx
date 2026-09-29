@@ -1,5 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 import { Dark } from "./themes";
+import { visuallyHidden } from "./visuallyHidden";
 
 export const GlobalStyle = createGlobalStyle`
   /* Native controls (checkbox, select lists, search clear, date picker, scrollbars) follow the theme */
@@ -12,6 +13,10 @@ export const GlobalStyle = createGlobalStyle`
     background: ${({ theme }) => theme.bgtotal};
     color: ${({ theme }) => theme.text};
     -webkit-font-smoothing: antialiased;
+  }
+
+  .sr-only {
+    ${visuallyHidden}
   }
 
   :focus-visible {

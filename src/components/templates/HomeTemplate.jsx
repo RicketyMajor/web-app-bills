@@ -9,7 +9,7 @@ import { isoDate, monthLabel, monthStart, shiftMonth, shortDate } from "../../ut
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
-import { useMoney, useProfile } from "../../hooks/useProfile";
+import { useBareMoney, useMoney, useProfile } from "../../hooks/useProfile";
 import { useCategories } from "../../hooks/useCategories";
 import { budgetRows, compareLabel, heroReference } from "../../utils/reports";
 import { PrimaryButton } from "../atoms/PrimaryButton";
@@ -27,6 +27,7 @@ import { ToPayList } from "../organisms/ToPayList";
 import { BudgetList } from "../organisms/BudgetList";
 import { GoalSummary } from "../organisms/GoalSummary";
 import { MovementDialog } from "../organisms/MovementDialog";
+import { Muted } from "../atoms/Muted";
 
 function greeting(hour) {
   if (hour < 12) return "Good morning";
@@ -181,9 +182,7 @@ export function HomeTemplate() {
 
 // Signature: what's left of this month's budget (or income, without one), and how much is spent
 function Balance({ totals, budget, monthName }) {
-  const money = useMoney();
-  // money() always signs; totals read better bare
-  const unsigned = (n) => money(Math.abs(n)).replace("+", "");
+  const unsigned = useBareMoney();
   const { income, expense } = totals;
   const { byBudget, base, left, over, ratio } = heroReference(totals, budget);
 
@@ -383,9 +382,4 @@ const Rows = styled.ul`
     color: ${({ theme }) => theme.textMuted};
     font-size: 12px;
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
 `;

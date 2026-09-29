@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { motion } from "motion/react";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { ease } from "../../styles/motion";
 
 const W = 300;
@@ -10,8 +10,7 @@ const H = 64;
 // Running spend this month (solid, drawn in) vs last month (dashed), day by day.
 // The aria-label carries the comparison the picture shows.
 export function CumulativeChart({ current, previous, days, monthName, prevName }) {
-  const money = useMoney();
-  const bare = (n) => money(n).replace("+", "");
+  const bare = useBareMoney();
   const n = Math.max(days, previous.length);
   const max = Math.max(1, ...current, ...previous);
   const x = (i) => (n > 1 ? (i / (n - 1)) * W : 0);

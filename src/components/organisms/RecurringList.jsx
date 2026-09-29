@@ -15,6 +15,8 @@ import { Skeleton } from "../atoms/Skeleton";
 import { IconButton } from "../atoms/IconButton";
 import { LoadError } from "../molecules/LoadError";
 import { RecurringDialog } from "./RecurringDialog";
+import { Muted } from "../atoms/Muted";
+import { Alert } from "../atoms/Alert";
 
 // Settings "Recurring": the rules behind auto-created pending movements (spec 15)
 export function RecurringList() {
@@ -215,14 +217,4 @@ const Switch = styled.button.attrs({ type: "button", role: "switch" })`
     opacity: 0.5;
     cursor: default;
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
-  font-size: 14px;
 `;

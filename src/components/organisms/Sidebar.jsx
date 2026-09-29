@@ -14,6 +14,7 @@ import {
   RiSideBarLine,
 } from "react-icons/ri";
 import { v } from "../../styles/variables";
+import { visuallyHidden } from "../../styles/visuallyHidden";
 import { useAuthStore } from "../../store/authStore";
 import { useThemeStore } from "../../store/themeStore";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
@@ -122,16 +123,6 @@ export function Sidebar() {
     </Aside>
   );
 }
-
-// Hidden visually but still read by screen readers
-const visuallyHidden = css`
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-`;
 
 const rowStyles = css`
   display: flex;

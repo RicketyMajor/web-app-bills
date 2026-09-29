@@ -11,6 +11,8 @@ import { Amount } from "../atoms/Amount";
 import { Skeleton } from "../atoms/Skeleton";
 import { Badge } from "../atoms/Badge";
 import { LoadError } from "../molecules/LoadError";
+import { Muted } from "../atoms/Muted";
+import { Alert } from "../atoms/Alert";
 
 // Unpaid movements, oldest first (late ones on top). One click settles one; the row leaves when the list refetches.
 export function ToPayList() {
@@ -148,14 +150,4 @@ const List = styled.ul`
   button:disabled {
     cursor: default;
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
-  font-size: 14px;
 `;

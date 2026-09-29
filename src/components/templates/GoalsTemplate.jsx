@@ -14,6 +14,8 @@ import { GoalList } from "../organisms/GoalList";
 import { GoalDetail } from "../organisms/GoalDetail";
 import { GoalDialog } from "../organisms/GoalDialog";
 import { ContributionDialog } from "../organisms/ContributionDialog";
+import { Muted } from "../atoms/Muted";
+import { Alert } from "../atoms/Alert";
 
 // Savings goals (spec 16): list + detail. The selected goal lives in ?goal= (replace: no history entries).
 export function GoalsTemplate() {
@@ -128,14 +130,4 @@ const Layout = styled.div`
     min-width: 0;
     scroll-margin-top: 16px;
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
-  font-size: 14px;
 `;

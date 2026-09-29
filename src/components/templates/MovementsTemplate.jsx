@@ -26,6 +26,8 @@ import { SegmentedControl } from "../molecules/SegmentedControl";
 import { MovementDialog } from "../organisms/MovementDialog";
 import { MovementFilters } from "../organisms/MovementFilters";
 import { ToolButton } from "../atoms/ToolButton";
+import { Muted } from "../atoms/Muted";
+import { Alert } from "../atoms/Alert";
 
 const VIEW_KEYS = ["type", "q", "cat", "status", "min", "max", "all"];
 const NO_FILTERS = { q: "", cat: "", status: "", min: "", max: "", all: "" };
@@ -376,11 +378,6 @@ const Table = styled(Card)`
   }
 `;
 
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
 const Summary = styled.p`
   color: ${({ theme }) => theme.textMuted};
   font-size: 14px;
@@ -407,9 +404,4 @@ const Empty = styled.div`
   button:hover {
     text-decoration: underline;
   }
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
-  font-size: 14px;
 `;

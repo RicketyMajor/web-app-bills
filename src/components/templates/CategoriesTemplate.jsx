@@ -6,7 +6,7 @@ import { tileMotion } from "../../styles/motion";
 import { monthStart } from "../../utils/movements";
 import { categoryErrorMessage, useCategories, useDeleteCategory } from "../../hooks/useCategories";
 import { useCategoryBreakdown } from "../../hooks/useReports";
-import { useMoney } from "../../hooks/useProfile";
+import { useBareMoney } from "../../hooks/useProfile";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { Skeleton } from "../atoms/Skeleton";
@@ -15,18 +15,19 @@ import { LoadError } from "../molecules/LoadError";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { CategoryDialog } from "../organisms/CategoryDialog";
 import { IconButton } from "../atoms/IconButton";
+import { Muted } from "../atoms/Muted";
+import { Alert } from "../atoms/Alert";
 
 const currentMonth = monthStart(new Date());
 
 // "120 of 300 this month" when budgeted; otherwise the plain total
-function tileTotal(spent, budget, money) {
-  const bare = (n) => money(n).replace("+", "");
+function tileTotal(spent, budget, bare) {
   if (budget) return `${bare(spent ?? 0)} of ${bare(budget)} this month`;
   return spent == null ? "Nothing this month" : `${bare(spent)} this month`;
 }
 
 export function CategoriesTemplate() {
-  const money = useMoney();
+  const bare = useBareMoney();
   const [type, setType] = useState("expense");
   const [editing, setEditing] = useState(null); // null = dialog closed
   const categories = useCategories(type);
@@ -76,7 +77,7 @@ export function CategoriesTemplate() {
                 <div className="body">
                   <span className="name">{c.name}</span>
                   <span className="total">
-                    {tileTotal(totalById.get(c.id), c.budget, money)}
+                    {tileTotal(totalById.get(c.id), c.budget, bare)}
                   </span>
                 </div>
                 <div className="actions">
@@ -161,14 +162,4 @@ const Grid = styled.div`
       opacity: 1;
     }
   }
-`;
-
-const Muted = styled.p`
-  color: ${({ theme }) => theme.textMuted};
-  font-size: 14px;
-`;
-
-const Alert = styled.p`
-  color: ${v.colorError};
-  font-size: 14px;
 `;
