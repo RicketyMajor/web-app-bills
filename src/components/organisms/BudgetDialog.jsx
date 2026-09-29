@@ -1,13 +1,13 @@
 import { Modal, ModalActions } from "../molecules/Modal";
 import { useSaveBudget } from "../../hooks/useBudgets";
-import { monthLabel } from "../../utils/movements";
+import { monthName } from "../../utils/movements";
 
 const MONEY = { type: "number", inputMode: "decimal", min: "0.01", max: "9999999999.99", step: "0.01" };
 
 // One category's budget: the usual monthly cap, this month's exception and the rollover switch
 export function BudgetDialog({ category, month, override, onClose }) {
   const save = useSaveBudget();
-  const monthName = monthLabel(month).split(" ")[0];
+  const monthLong = monthName(month);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,7 +33,7 @@ export function BudgetDialog({ category, month, override, onClose }) {
           <small className="hint">Applies every month.</small>
         </label>
         <label>
-          <span>{monthName} only</span>
+          <span>{monthLong} only</span>
           <input name="override" {...MONEY} defaultValue={override ?? ""} placeholder="Same as monthly" />
           <small className="hint">Leave empty to use the monthly budget.</small>
         </label>

@@ -6,7 +6,7 @@ import { useCategories } from "../../hooks/useCategories";
 import { useBudgetMonth } from "../../hooks/useBudgets";
 import { useBareMoney } from "../../hooks/useProfile";
 import { budgetRows, overrideKey } from "../../utils/budgets";
-import { monthLabel, shiftMonth, toCents } from "../../utils/movements";
+import { monthName, shiftMonth, toCents } from "../../utils/movements";
 import { Card } from "../atoms/Card";
 import { Skeleton } from "../atoms/Skeleton";
 import { Muted } from "../atoms/Muted";
@@ -27,8 +27,8 @@ export function BudgetsTemplate() {
   const data = useBudgetMonth(month);
   const [editing, setEditing] = useState(null); // category id; null = dialog closed
 
-  const monthName = monthLabel(month).split(" ")[0];
-  const prevName = monthLabel(shiftMonth(month, -1)).slice(0, 3);
+  const monthLong = monthName(month);
+  const prevName = monthName(shiftMonth(month, -1), "short");
   const rows = categories.data && data.data ? budgetRows(categories.data, month, data.data.overrides, data.data) : null;
   const budgeted = new Set(rows?.map((r) => r.id));
   const unbudgeted = categories.data?.filter((c) => !budgeted.has(c.id)) ?? [];
@@ -69,12 +69,12 @@ export function BudgetsTemplate() {
                   Budgeted {cents("budget") < 0 && "-"}{bare(cents("budget") / 100)} · Spent {bare(cents("spent") / 100)} · {bare(left)}{" "}
                   {left < 0 ? "over" : "left"}
                 </Muted>
-                <Card aria-label={`${monthName} budgets`}>
+                <Card aria-label={`${monthLong} budgets`}>
                   <BudgetList rows={rows} prevName={prevName} onEdit={(r) => setEditing(r.id)} />
                 </Card>
               </>
             ) : (
-              <Muted>No budgets for {monthName} yet. Set one below.</Muted>
+              <Muted>No budgets for {monthLong} yet. Set one below.</Muted>
             )}
 
             {unbudgeted.length > 0 && (

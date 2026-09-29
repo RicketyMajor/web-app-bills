@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
 import { rowMotion } from "../../styles/motion";
 import { useAuthStore } from "../../store/authStore";
-import { isoDate, monthLabel, monthStart, shiftMonth, shortDate } from "../../utils/movements";
+import { isoDate, monthName, monthStart, shiftMonth, shortDate } from "../../utils/movements";
 import { useMonthTotals } from "../../hooks/useMonthTotals";
 import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
@@ -47,8 +47,8 @@ export function HomeTemplate() {
   const firstName = (profile?.full_name || user?.user_metadata?.full_name || user?.email)?.split(" ")[0];
   const now = new Date();
   const month = monthStart(now);
-  const monthName = monthLabel(month).split(" ")[0];
-  const prevName = monthLabel(shiftMonth(month, -1)).split(" ")[0];
+  const monthLong = monthName(month);
+  const prevName = monthName(shiftMonth(month, -1));
   const [adding, setAdding] = useState(false);
 
   const totals = useMonthTotals(month);
@@ -84,7 +84,7 @@ export function HomeTemplate() {
       ) : (
         <Layout>
           <div className="col">
-            <Card className="balance" aria-label={`${monthName} balance`} aria-busy={totals.isPending}>
+            <Card className="balance" aria-label={`${monthLong} balance`} aria-busy={totals.isPending}>
               {totals.isPending ? (
                 <>
                   <Skeleton $h={44} $w="60%" />
@@ -93,14 +93,14 @@ export function HomeTemplate() {
               ) : totals.isError ? (
                 <LoadError message="Couldn't load this month's totals." onRetry={totals.refetch} />
               ) : (
-                <Balance totals={totals.data} budget={profile?.monthly_budget} monthName={monthName} />
+                <Balance totals={totals.data} budget={profile?.monthly_budget} monthName={monthLong} />
               )}
               {cumulative.isPending ? (
                 <Skeleton $h={112} />
               ) : cumulative.isError ? (
                 <LoadError message="Couldn't load the spending chart." onRetry={cumulative.refetch} />
               ) : (
-                <CumulativeChart {...cumulative.data} monthName={monthName} prevName={prevName} />
+                <CumulativeChart {...cumulative.data} monthName={monthLong} prevName={prevName} />
               )}
             </Card>
 
@@ -168,7 +168,7 @@ export function HomeTemplate() {
               ) : breakdown.isError ? (
                 <LoadError message="Couldn't load categories." onRetry={breakdown.refetch} />
               ) : breakdown.data.length === 0 ? (
-                <Muted>No expenses in {monthName} yet.</Muted>
+                <Muted>No expenses in {monthLong} yet.</Muted>
               ) : (
                 // Top 4 by amount; % stays the share of the whole month
                 <CategoryBreakdown rows={breakdown.data} limit={4} compare={compareLabel(month, isoDate(now))} />

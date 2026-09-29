@@ -1,6 +1,6 @@
 // Reads the app's own CSV export back (utils/csv.js writes it). Pure functions, tested.
 const COLUMNS = ["date", "description", "category", "type", "amount", "paid"];
-export const MAX_ROWS = 2000;
+const MAX_ROWS = 2000;
 export const MAX_BYTES = 1024 * 1024;
 
 // RFC 4180: quoted fields, "" escapes, commas and line breaks inside quotes. Blank lines stay (as [""]) so row numbers match the file.

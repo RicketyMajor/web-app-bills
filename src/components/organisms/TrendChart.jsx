@@ -2,9 +2,9 @@ import styled, { useTheme } from "styled-components";
 import { motion } from "motion/react";
 import { ease } from "../../styles/motion";
 import { useMoney } from "../../hooks/useProfile";
-import { monthLabel } from "../../utils/movements";
+import { monthLabel, monthName } from "../../utils/movements";
 
-const shortMonth = (m) => monthLabel(m).slice(0, 3);
+const shortMonth = (m) => monthName(m, "short");
 
 // Income up, expenses down from a shared zero baseline (one axis).
 // Position tells the two apart; green/red alone fails colour-blind separation.

@@ -17,6 +17,10 @@ export const shiftMonth = (start, n) => {
 export const monthLabel = (start) =>
   parse(start).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
+// "September" or "Sep"
+export const monthName = (start, month = "long") =>
+  parse(start).toLocaleDateString("en-US", { month });
+
 export const toCents = (amount) => Math.round(Number(amount) * 100);
 
 // "Sep 24"; outside today's year it adds it: "Mar 5, 2020"
