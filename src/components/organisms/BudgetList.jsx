@@ -1,13 +1,27 @@
 import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { rowMotion } from "../../styles/motion";
-import { useBareMoney } from "../../hooks/useProfile";
+import { v } from "../../styles/variables";
+import { useBareMoney, useMoney } from "../../hooks/useProfile";
 import { CategorySwatch } from "../atoms/CategorySwatch";
 import { Meter } from "../atoms/Meter";
+import { IconButton } from "../atoms/IconButton";
 
-// Rows from budgetRows(): spent vs cap per category. Over budget turns the meter and figure expenseText.
-export function BudgetList({ rows }) {
+// Rows from budgetRows(): spent vs budget per category. Over budget turns the meter and figure expenseText.
+// prevName turns on the note that explains the budget (Budgets page); onEdit adds an edit button.
+export function BudgetList({ rows, prevName, onEdit }) {
   const bare = useBareMoney();
+  const money = useMoney();
+  // A big rolled-in overspend can take the budget below zero: keep its minus
+  const cap = (n) => (n < 0 ? money(n) : bare(n));
+  const note = (r) =>
+    [
+      r.override !== null && (r.base ? `usually ${bare(r.base)}` : "this month only"),
+      r.carry > 0 && `+${bare(r.carry)} from ${prevName}`,
+      r.carry < 0 && `${bare(r.carry)} over in ${prevName}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
   return (
     <List>
@@ -26,9 +40,15 @@ export function BudgetList({ rows }) {
                 </div>
                 <Meter label={`${r.name} budget used`} ratio={r.ratio} over={over} delay={i * 0.04} />
                 <span className="meta">
-                  {bare(r.spent)} of {bare(r.budget)}
+                  {bare(r.spent)} of {cap(r.budget)}
+                  {prevName && note(r) && ` · ${note(r)}`}
                 </span>
               </div>
+              {onEdit && (
+                <IconButton type="button" onClick={() => onEdit(r)} aria-label={`Edit ${r.name} budget`}>
+                  <v.iconeditarTabla aria-hidden="true" />
+                </IconButton>
+              )}
             </motion.li>
           );
         })}

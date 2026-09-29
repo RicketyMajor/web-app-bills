@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { AnimatePresence, motion } from "motion/react";
 import { v } from "../../styles/variables";
@@ -6,6 +7,9 @@ import { tileMotion } from "../../styles/motion";
 import { monthStart } from "../../utils/movements";
 import { categoryErrorMessage, useCategories, useDeleteCategory } from "../../hooks/useCategories";
 import { useCategoryBreakdown } from "../../hooks/useReports";
+import { useBudgetMonth } from "../../hooks/useBudgets";
+import { budgetRows } from "../../utils/budgets";
+import { ToolButton } from "../atoms/ToolButton";
 import { useBareMoney } from "../../hooks/useProfile";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { CategorySwatch } from "../atoms/CategorySwatch";
@@ -22,7 +26,7 @@ const currentMonth = monthStart(new Date());
 
 // "120 of 300 this month" when budgeted; otherwise the plain total
 function tileTotal(spent, budget, bare) {
-  if (budget) return `${bare(spent ?? 0)} of ${bare(budget)} this month`;
+  if (budget != null) return `${bare(spent ?? 0)} of ${budget < 0 ? "-" : ""}${bare(budget)} this month`;
   return spent == null ? "Nothing this month" : `${bare(spent)} this month`;
 }
 
@@ -34,6 +38,13 @@ export function CategoriesTemplate() {
   const totals = useCategoryBreakdown(currentMonth, type);
   const remove = useDeleteCategory();
   const totalById = new Map(totals.data?.map((r) => [r.id, r.total]));
+  // This month's effective budget (overrides, rollover); income categories never have one
+  const budgetMonth = useBudgetMonth(currentMonth, type === "expense");
+  const budgetById = new Map(
+    categories.data && budgetMonth.data
+      ? budgetRows(categories.data, currentMonth, budgetMonth.data.overrides, budgetMonth.data).map((r) => [r.id, r.budget])
+      : []
+  );
 
   const handleDelete = (category) => {
     if (confirm(`Delete "${category.name}"?`)) remove.mutate(category.id);
@@ -42,6 +53,9 @@ export function CategoriesTemplate() {
   return (
     <Container>
       <PageHeader title="Categories">
+        <ToolButton as={Link} to="/budgets">
+          Budgets
+        </ToolButton>
         <PrimaryButton type="button" onClick={() => setEditing({ type })}>
           <v.agregar aria-hidden="true" />
           New category
@@ -77,7 +91,8 @@ export function CategoriesTemplate() {
                 <div className="body">
                   <span className="name">{c.name}</span>
                   <span className="total">
-                    {tileTotal(totalById.get(c.id), c.budget, bare)}
+                    {/* The base budget stands in while the effective one loads (or fails) */}
+                    {tileTotal(totalById.get(c.id), budgetMonth.data ? budgetById.get(c.id) : c.budget, bare)}
                   </span>
                 </div>
                 <div className="actions">

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { budgetRows, compareLabel, cumulativeByDay, heroReference, lastMonths, monthlyTotals, totalsByCategory } from "./reports.js";
+import { compareLabel, cumulativeByDay, heroReference, lastMonths, monthlyTotals, totalsByCategory } from "./reports.js";
 
 test("lastMonths ends at the given month, oldest first", () => {
   assert.deepEqual(lastMonths("2026-02-01", 3), ["2025-12-01", "2026-01-01", "2026-02-01"]);
@@ -85,24 +85,6 @@ test("cumulativeByDay stops the current month at today", () => {
 
 test("cumulativeByDay ignores a today outside the month", () => {
   assert.equal(cumulativeByDay([], "2026-04-01", "2026-09-27").current.length, 30);
-});
-
-test("budgetRows joins budgets with spend, most at risk first", () => {
-  const cats = [
-    { id: 1, name: "Food", budget: 300 },
-    { id: 2, name: "Bus", budget: 150 },
-    { id: 3, name: "Fun", budget: null },
-    { id: 4, name: "Gym", budget: "40.00" },
-  ];
-  const breakdown = [{ id: 1, total: 320.1 }, { id: 2, total: 90 }, { id: 3, total: 140 }];
-  assert.deepEqual(
-    budgetRows(cats, breakdown).map(({ id, spent, left, ratio }) => ({ id, spent, left, ratio: +ratio.toFixed(3) })),
-    [
-      { id: 1, spent: 320.1, left: -20.1, ratio: 1.067 },
-      { id: 2, spent: 90, left: 60, ratio: 0.6 },
-      { id: 4, spent: 0, left: 40, ratio: 0 },
-    ]
-  );
 });
 
 test("heroReference prefers the budget, falls back to income", () => {

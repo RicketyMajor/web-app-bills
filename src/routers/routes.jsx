@@ -8,6 +8,7 @@ import { Splash } from '../components/molecules/Splash';
 const Login = lazy(() => import('../pages/Login').then((m) => ({ default: m.Login })));
 const Home = lazy(() => import('../pages/Home').then((m) => ({ default: m.Home })));
 const Categories = lazy(() => import('../pages/Categories').then((m) => ({ default: m.Categories })));
+const Budgets = lazy(() => import('../pages/Budgets').then((m) => ({ default: m.Budgets })));
 const Movements = lazy(() => import('../pages/Movements').then((m) => ({ default: m.Movements })));
 const Reports = lazy(() => import('../pages/Reports').then((m) => ({ default: m.Reports })));
 const Goals = lazy(() => import('../pages/Goals').then((m) => ({ default: m.Goals })));
@@ -27,6 +28,7 @@ export function MyRoutes() {
                         <Route element={<AppLayout />}>
                             <Route path="/" element={<Home />} />
                             <Route path="/categories" element={<Categories />} />
+                            <Route path="/budgets" element={<Budgets />} />
                             <Route path="/movements" element={<Movements />} />
                             <Route path="/reports" element={<Reports />} />
                             <Route path="/goals" element={<Goals />} />

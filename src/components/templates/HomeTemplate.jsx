@@ -11,7 +11,9 @@ import { useRecentMovements } from "../../hooks/useMovements";
 import { useCategoryBreakdown, useCumulativeSpending } from "../../hooks/useReports";
 import { useBareMoney, useMoney, useProfile } from "../../hooks/useProfile";
 import { useCategories } from "../../hooks/useCategories";
-import { budgetRows, compareLabel, heroReference } from "../../utils/reports";
+import { compareLabel, heroReference } from "../../utils/reports";
+import { budgetRows } from "../../utils/budgets";
+import { useBudgetMonth } from "../../hooks/useBudgets";
 import { PrimaryButton } from "../atoms/PrimaryButton";
 import { Meter } from "../atoms/Meter";
 import { CategorySwatch } from "../atoms/CategorySwatch";
@@ -54,9 +56,12 @@ export function HomeTemplate() {
   const recent = useRecentMovements(6);
   const breakdown = useCategoryBreakdown(month, "expense");
   const expenseCategories = useCategories("expense");
-  // ponytail: card appears once both queries land; their errors already surface in Where it goes / dialogs
+  // ponytail: the card stays hidden while loading or on error; the Budgets page shows those states
+  const budgetMonth = useBudgetMonth(month);
   const budgets =
-    expenseCategories.data && breakdown.data ? budgetRows(expenseCategories.data, breakdown.data) : [];
+    expenseCategories.data && budgetMonth.data
+      ? budgetRows(expenseCategories.data, month, budgetMonth.data.overrides, budgetMonth.data)
+      : [];
 
   return (
     <Container>
@@ -145,7 +150,7 @@ export function HomeTemplate() {
               <Card className="budgets" aria-labelledby="budgets-title">
                 <div className="head">
                   <h2 id="budgets-title">Budgets</h2>
-                  <Link to="/categories">Categories →</Link>
+                  <Link to="/budgets">Budgets →</Link>
                 </div>
                 <BudgetList rows={budgets.slice(0, 5)} />
               </Card>

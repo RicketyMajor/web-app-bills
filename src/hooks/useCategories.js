@@ -17,7 +17,7 @@ export function useCategories(type) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name, type, icon, color, budget")
+        .select("id, name, type, icon, color, budget, rollover, created_at")
         .eq("type", type)
         .order("name");
       if (error) throw error;

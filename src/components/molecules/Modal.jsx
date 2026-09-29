@@ -107,6 +107,17 @@ const Dialog = styled.dialog`
     letter-spacing: 0;
     text-transform: none;
   }
+  /* A check with a hint below its text: box aligns with the first line */
+  form > label.check:has(.hint) {
+    align-items: flex-start;
+  }
+  form > label.check:has(.hint) > input {
+    margin-top: 2px;
+  }
+  form > label.check .hint {
+    display: block;
+    margin-top: 2px;
+  }
   .hint {
     color: ${({ theme }) => theme.textMuted};
     font-size: 13px;

@@ -65,19 +65,6 @@ export function compareLabel(month, today) {
   return `${name} 1–${Math.min(Number(today.slice(8, 10)), daysIn(previous))}`;
 }
 
-// Budgeted categories with this month's spend (0 when none), most at risk first
-export function budgetRows(categories, breakdown) {
-  const spent = new Map(breakdown.map((r) => [r.id, r.total]));
-  return categories
-    .filter((c) => c.budget)
-    .map((c) => {
-      const budget = Number(c.budget);
-      const s = spent.get(c.id) ?? 0;
-      return { ...c, budget, spent: s, left: (toCents(budget) - toCents(s)) / 100, ratio: s / budget };
-    })
-    .sort((a, b) => b.ratio - a.ratio);
-}
-
 // Home hero: measure against the total budget when set, otherwise against income
 export function heroReference({ income, expense }, budget) {
   const byBudget = Number(budget) > 0;

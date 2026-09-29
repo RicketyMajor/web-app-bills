@@ -34,7 +34,8 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 
 - **Google sign-in** via Supabase Auth. Each account only sees its own data (Postgres row-level security).
 - **Home**: what's left of this month's budget (or income), this month's spending vs. last month day by day, recent movements, what's still **to pay** with due dates (settle it in one click), budgets, top categories and active goals.
-- **Categories** for income and expenses, with emoji, color, this month's total and an optional monthly budget.
+- **Categories** for income and expenses, with emoji, color and this month's total.
+- **Budgets** per expense category: a monthly cap, one-month exceptions (a bigger December) and an optional rollover of last month's leftover or overspend, planned month by month on the Budgets page.
 - **Movements** by month: amount, category, date, description, paid/pending. Monthly totals, search and filters (text, category, status, amount, all months), **CSV export** of what you see and **CSV import** of an export (preview, new categories, duplicates left unchecked).
 - **Recurring movements**: weekly, monthly or yearly rules that add pending movements when they're due; pause, resume or delete them in Settings.
 - **Savings goals**: a target, an optional deadline with the monthly pace to reach it, and a history of contributions and withdrawals.
@@ -96,6 +97,8 @@ Every table has a `user_id` and RLS policies limiting access to `auth.uid()`.
 `20260928200000_recurring.sql` adds `recurring` rules and links their movements with `movements.recurring_id`.
 
 `20260929000000_goals.sql` adds `goals` and `goal_contributions` (signed amounts; saved = their sum).
+
+`20260929100000_budget_months.sql` adds `categories.rollover` and `budget_overrides` (one budget for one category and month).
 
 ### Google sign-in
 

@@ -63,6 +63,7 @@ export function CategoryDialog({ category, onClose }) {
               placeholder="No limit"
               defaultValue={category.budget ?? ""}
             />
+            <small className="hint">One-month changes and rollover are on the Budgets page.</small>
           </label>
         )}
 
