@@ -10,7 +10,9 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 |---|---|
 | ![Movements by month](docs/screenshots/movements.png) | ![Reports: 6-month trend and breakdown by category](docs/screenshots/reports.png) |
 | **Categories** | **Settings** |
-| ![Categories grid with this month's totals](docs/screenshots/categories.png) | ![Settings: name, currency, appearance, delete account](docs/screenshots/settings.png) |
+| ![Categories grid with this month's totals and budgets](docs/screenshots/categories.png) | ![Settings: profile, monthly budget and recurring movements](docs/screenshots/settings.png) |
+| **Goals** | |
+| ![Savings goals: list, progress, monthly pace and history](docs/screenshots/goals.png) | |
 
 <details>
 <summary>Dark theme</summary>
@@ -31,11 +33,14 @@ A personal expense tracker: sign in with Google, organize your categories, log i
 ## Features
 
 - **Google sign-in** via Supabase Auth. Each account only sees its own data (Postgres row-level security).
-- **Home**: what's left of this month's income, this month's spending vs. last month day by day, recent movements, what's still **to pay** (settle it in one click) and top categories.
-- **Categories** for income and expenses, with emoji, color and this month's total.
-- **Movements** by month: amount, category, date, description, paid/pending. Monthly income, expense and net totals.
-- **Reports**: 6-month income vs. expense trend and a ranked breakdown by category, each with an accessible table view.
-- **Settings**: display name, currency (formats every amount), and self-service account deletion.
+- **Home**: what's left of this month's budget (or income), this month's spending vs. last month day by day, recent movements, what's still **to pay** with due dates (settle it in one click), budgets, top categories and active goals.
+- **Categories** for income and expenses, with emoji, color, this month's total and an optional monthly budget.
+- **Movements** by month: amount, category, date, description, paid/pending. Monthly totals, search and filters (text, category, status, amount, all months) and **CSV export** of what you see.
+- **Recurring movements**: weekly, monthly or yearly rules that add pending movements when they're due; pause, resume or delete them in Settings.
+- **Savings goals**: a target, an optional deadline with the monthly pace to reach it, and a history of contributions and withdrawals.
+- **Reports**: 6-month income vs. expense trend and a ranked breakdown by category with month-over-month changes, each with an accessible table view.
+- **Settings**: display name, currency (formats every amount), total monthly budget, recurring movements and self-service account deletion.
+- **Installable** as an app (web manifest).
 - **Appearance**: Light, Dark or System (follows the OS live); light/dark choices sync across devices.
 - **Motion** that respects the OS "reduce motion" setting: figures count, charts draw, lists and pages transition.
 - Responsive: sidebar on desktop, bottom bar on mobile.
@@ -86,6 +91,12 @@ Every table has a `user_id` and RLS policies limiting access to `auth.uid()`.
 
 `20260928000000_category_constraints.sql` makes category names unique per user and type regardless of case, and bounds the icon length.
 
+`20260928100000_budgets.sql` adds an optional monthly budget per expense category and a total on the profile.
+
+`20260928200000_recurring.sql` adds `recurring` rules and links their movements with `movements.recurring_id`.
+
+`20260929000000_goals.sql` adds `goals` and `goal_contributions` (signed amounts; saved = their sum).
+
 ### Google sign-in
 
 1. Google Cloud → Credentials → OAuth client (Web): add `http://localhost:5173` to *Authorized JavaScript origins* and `https://<ref>.supabase.co/auth/v1/callback` to *Authorized redirect URIs*.
@@ -120,7 +131,7 @@ src/
     atoms/ molecules/ organisms/ templates/   # atomic design
   pages/        # one thin wrapper per route (lazy-loaded)
   routers/      # routes + auth guards
-  hooks/        # TanStack Query hooks (categories, movements, totals, reports, profile)
+  hooks/        # TanStack Query hooks (categories, movements, totals, reports, profile, recurring, goals)
   store/        # Zustand stores (auth, theme, month)
   supabase/     # Supabase client
   styles/       # themes, design tokens, global styles
