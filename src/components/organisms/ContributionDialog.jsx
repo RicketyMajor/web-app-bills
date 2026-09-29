@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { SegmentedControl } from "../molecules/SegmentedControl";
 import { useAddContribution } from "../../hooks/useGoals";
@@ -17,6 +17,7 @@ export function ContributionDialog({ goal, saved, mode: initialMode, onClose }) 
   const bare = useBareMoney();
   const [mode, setMode] = useState(initialMode);
   const withdraw = mode === "withdraw";
+  const hintId = useId();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -50,8 +51,13 @@ export function ContributionDialog({ goal, saved, mode: initialMode, onClose }) 
             step="0.01"
             required
             autoFocus
+            aria-describedby={withdraw ? hintId : undefined}
           />
-          {withdraw && <small className="hint">{bare(saved)} saved in this goal.</small>}
+          {withdraw && (
+            <small className="hint" id={hintId} aria-hidden="true">
+              {bare(saved)} saved in this goal.
+            </small>
+          )}
         </label>
         <label>
           <span>Date</span>

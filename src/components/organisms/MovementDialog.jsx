@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { useCategories } from "../../hooks/useCategories";
@@ -17,6 +17,7 @@ const REPEATS = [
 export function MovementDialog({ movement, onClose }) {
   const save = useSaveMovement();
   const addRecurring = useAddRecurring();
+  const hintId = useId();
   // Repeat is offered only when creating; its hint follows the chosen date
   const [repeat, setRepeat] = useState("");
   const [date, setDate] = useState(movement.date);
@@ -110,7 +111,11 @@ export function MovementDialog({ movement, onClose }) {
         {!movement.id && (
           <label>
             <span>Repeat</span>
-            <select value={repeat} onChange={(e) => setRepeat(e.target.value)}>
+            <select
+              value={repeat}
+              onChange={(e) => setRepeat(e.target.value)}
+              aria-describedby={repeat && date ? hintId : undefined}
+            >
               {REPEATS.map((r) => (
                 <option key={r.value} value={r.value}>
                   {r.label}
@@ -118,7 +123,7 @@ export function MovementDialog({ movement, onClose }) {
               ))}
             </select>
             {repeat && date && (
-              <small className="hint">
+              <small className="hint" id={hintId} aria-hidden="true">
                 {repeatLabel(repeat, date)}
                 {repeat === "monthly" && Number(date.slice(8)) > 28 && " (last day in shorter months)"}. Added as
                 pending each time.

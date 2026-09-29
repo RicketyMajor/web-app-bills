@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { useSaveBudget } from "../../hooks/useBudgets";
 import { monthName } from "../../utils/movements";
@@ -8,6 +9,7 @@ const MONEY = { type: "number", inputMode: "decimal", min: "0.01", max: "9999999
 export function BudgetDialog({ category, month, override, onClose }) {
   const save = useSaveBudget();
   const monthLong = monthName(month);
+  const hintId = useId();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,19 +31,25 @@ export function BudgetDialog({ category, month, override, onClose }) {
       <form onSubmit={handleSubmit}>
         <label>
           <span>Monthly budget</span>
-          <input name="budget" {...MONEY} defaultValue={category.budget ?? ""} placeholder="No budget" autoFocus />
-          <small className="hint">Applies every month.</small>
+          <input name="budget" {...MONEY} defaultValue={category.budget ?? ""} placeholder="No budget" autoFocus aria-describedby={`${hintId}-budget`} />
+          <small className="hint" id={`${hintId}-budget`} aria-hidden="true">
+            Applies every month.
+          </small>
         </label>
         <label>
           <span>{monthLong} only</span>
-          <input name="override" {...MONEY} defaultValue={override ?? ""} placeholder="Same as monthly" />
-          <small className="hint">Leave empty to use the monthly budget.</small>
+          <input name="override" {...MONEY} defaultValue={override ?? ""} placeholder="Same as monthly" aria-describedby={`${hintId}-override`} />
+          <small className="hint" id={`${hintId}-override`} aria-hidden="true">
+            Leave empty to use the monthly budget.
+          </small>
         </label>
         <label className="check">
-          <input name="rollover" type="checkbox" defaultChecked={category.rollover} />
+          <input name="rollover" type="checkbox" defaultChecked={category.rollover} aria-describedby={`${hintId}-rollover`} />
           <span>
             Roll over from last month
-            <small className="hint">Adds what was left last month, or takes off what went over.</small>
+            <small className="hint" id={`${hintId}-rollover`} aria-hidden="true">
+              Adds what was left last month, or takes off what went over.
+            </small>
           </span>
         </label>
 

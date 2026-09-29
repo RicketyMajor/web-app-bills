@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { categoryErrorMessage, useSaveCategory } from "../../hooks/useCategories";
 import { Modal, ModalActions } from "../molecules/Modal";
 import { EmojiPicker } from "../molecules/EmojiPicker";
@@ -8,6 +8,7 @@ import { EMOJIS } from "../../utils/emojis";
 export function CategoryDialog({ category, onClose }) {
   const save = useSaveCategory();
   const isNew = !category.id;
+  const hintId = useId();
   // Icons outside the set (e.g. old free-text values) fall back to the default
   const [icon, setIcon] = useState(EMOJIS.includes(category.icon) ? category.icon : "📁");
 
@@ -62,8 +63,11 @@ export function CategoryDialog({ category, onClose }) {
               step="0.01"
               placeholder="No limit"
               defaultValue={category.budget ?? ""}
+              aria-describedby={hintId}
             />
-            <small className="hint">One-month changes and rollover are on the Budgets page.</small>
+            <small className="hint" id={hintId} aria-hidden="true">
+              One-month changes and rollover are on the Budgets page.
+            </small>
           </label>
         )}
 
