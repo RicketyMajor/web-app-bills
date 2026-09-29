@@ -32,6 +32,7 @@ context/
 # Any markdown except the main README
 *.md
 !/README.md
+!/CHANGELOG.md
 
 # Brainstorming companion mockups
 .superpowers/
