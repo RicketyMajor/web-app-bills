@@ -2,6 +2,11 @@
 
 All notable changes to Bills are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- The app opens faster: its files stay cached between visits, the connection to the server opens while the app downloads, and Home loads while your session is checked.
+
 ## [1.0.1] — 2026-09-29
 
 ### Fixed

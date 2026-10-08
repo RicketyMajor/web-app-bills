@@ -6,7 +6,10 @@ import { Splash } from '../components/molecules/Splash';
 
 // Route-level code splitting: each page ships in its own chunk.
 const Login = lazy(() => import('../pages/Login').then((m) => ({ default: m.Login })));
-const Home = lazy(() => import('../pages/Home').then((m) => ({ default: m.Home })));
+// ponytail: "/" is the PWA start_url, so fetch Home's chunks while the session resolves
+// (logged-out visitors download ~25 KB they don't use; route-aware prefetch if that matters)
+const homePage = import('../pages/Home');
+const Home = lazy(() => homePage.then((m) => ({ default: m.Home })));
 const Categories = lazy(() => import('../pages/Categories').then((m) => ({ default: m.Categories })));
 const Budgets = lazy(() => import('../pages/Budgets').then((m) => ({ default: m.Budgets })));
 const Movements = lazy(() => import('../pages/Movements').then((m) => ({ default: m.Movements })));
